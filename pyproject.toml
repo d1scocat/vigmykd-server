@@ -1,0 +1,26 @@
+[project]
+name = "vigmykd-server"
+version = "0.1.0"
+description = "Game server for vigmykd"
+authors = [
+    { name = "discokitty", email = "vigmykd@runderscore.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+]
+
+license = { file = "LICENSE" }
+
+[project.optional-dependencies]
+dev = [
+    "flake8>=6.0",
+    "mypy>=1.0",
+    "pytest>=9.0.2" 
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

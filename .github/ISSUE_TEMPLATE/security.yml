@@ -1,0 +1,43 @@
+name: Security Issue (DO NOT USE)
+description: Report a security vulnerability (redirects to private contact)
+title: "[SECURITY] "
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Do NOT submit security issues publicly!!!
+
+        If you have discovered a **security vulnerability**, please **do not continue with this form**.
+
+        Publicly disclosing vulnerabilities can put users at risk.
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Report it privately instead
+
+        Please report the issue directly via one of the following:
+
+        - Email: **vigmykd-security@runderscore.com**
+
+        Include:
+        - Description of the vulnerability
+        - Steps to reproduce
+        - Potential impact
+
+  - type: markdown
+    attributes:
+      value: |
+        ## What happens next?
+
+        - You'll receive a response as soon as possible
+        - The issue will be investigated privately
+        - A fix will be prepared before any public disclosure
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Thank you!
+
+        Responsible disclosure helps keep the project and its users safe.

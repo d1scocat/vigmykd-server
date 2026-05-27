@@ -1,0 +1,51 @@
+name: Performance Issue
+description: Report or track performance problems
+title: "[PERF] "
+labels: ["performance"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+
+  - type: textarea
+    id: cause
+    attributes:
+      label: Suspected cause (if any)
+
+  - type: textarea
+    id: fixes
+    attributes:
+      label: Ideas for Fix
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/d1scocat/vigmykd-server/CODE_OF_CONDUCT.md).
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

@@ -1,0 +1,14 @@
+* text=auto
+
+*.py text
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+
+*.lock merge=ours

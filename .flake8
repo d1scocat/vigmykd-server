@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 100
+ignore = E203,W503,W504
+per-file-ignores = 
+    __init__.py:F401,F403
+    main.py:F401,F403
