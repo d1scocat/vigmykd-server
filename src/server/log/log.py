@@ -1,5 +1,4 @@
 import logging.config
-from logging import getLogger
 
 
 _config = {
