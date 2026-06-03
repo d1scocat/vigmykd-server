@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+enum POS_FACING {
+    NEG_X = 0;
+    POS_X = 1;
+}
+
+message Position {
+    POS_FACING facing = 1;
+    float x = 2;
+    float y = 3;
+}
+
+enum PLAYER_ACTION_TYPE {
+    JUMP = 0;
+}
+
+message PlayerActionReq {
+    PLAYER_ACTION_TYPE type = 1;
+}
+
+message Packet {
+    uint32 msg_id = 1;
+
+    oneof payload {
+        Position position = 2;
+        PlayerActionReq action_req = 3;
+    }
+}

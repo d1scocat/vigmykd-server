@@ -5,11 +5,11 @@ VENV/
 .venv/
 .env/
 
+generated/
+
 .env
 
 keys/
-
-./init-mongo.js
 
 __pycache__/
 *.py[cod]
@@ -18,6 +18,8 @@ __pycache__/
 *.so
 
 *.pem
+
+*.non-vcs
 
 .Python
 build/
