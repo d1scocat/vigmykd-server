@@ -17,4 +17,9 @@ RUN protoc \
 
 RUN pip install --no-cache-dir .
 
+RUN useradd --create-home --shell /usr/sbin/nologin server
+RUN chown -R server:server /app
+
+USER server
+
 CMD ["python", "-m", "server.main"]
