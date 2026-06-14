@@ -1,0 +1,11 @@
+services:
+  server:
+    build: .
+    container_name: vigmykd-server
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    ports:
+      - "${vigmykd_port}:${vigmykd_port}/udp"
