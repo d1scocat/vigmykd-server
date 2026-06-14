@@ -2,7 +2,7 @@ import asyncio
 
 from socket import socket
 
-from server.generated.proto.v1 import packet_pb2 as packet_pb2
+import server.generated.v1.packet_pb2 as packet_pb2
 
 from server.context import ServerContext
 from server.data.all_handler import SocketIOHandler

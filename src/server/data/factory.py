@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 
-from server.generated.proto.v1 import packet_pb2 as packet_pb2
+import server.generated.v1.packet_pb2 as packet_pb2
 
 from server.settings import config
 
