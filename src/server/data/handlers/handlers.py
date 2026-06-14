@@ -40,18 +40,6 @@ class Handlers:
         enqueue_out: EnqueueOut,
         msg_id: int,
     ):
-        # - Received Packet.ClientToServerPacket.MatchmakingEnter
-        #   Params: str match_id, str join_token
-        #   All of this ^^^ is inside Packet::client_to_server::matchmaking_enter
-        #   Find the match by match_id and find the player there
-        #   Check that now <= expires
-        #   Ensure that this player is not already connected to any match
-        #   Set "status" to "in-queue" (maybe enum?)
-        #   Drop the join_token (set to None) so that it is one-use
-        #   Return Ack message
-        #   After making sure that enqueuing one player works, make it so that RegisterMatch
-        #    responses can return an existing match, if the two players are allowed to
-        #    battle each other
         match_id = payload.match_id
         join_token = payload.join_token
 
@@ -97,22 +85,17 @@ class Handlers:
         players: list[str] = list(payload.players)
         join_token: str = payload.join_token  # for players[0]
         expires: int = payload.expires
-        logger.info(f"Got verified ICP [RM] {match_id=} {match_key=} {players=} {join_token=} {expires=}")
 
         ok = True
 
         try:
-            logger.info("{match_id=} Pass 1")
             match = Match(match_id, match_key, (players[0], join_token), expires, "waiting")
-            logger.info("{match_id=} Pass 2")
             ctx.match_manager.register_match(match)
-            logger.info("{match_id=} Pass 3")
         except Exception:
             logger.warning("Could not create match", exc_info=True)
             ok = False
         finally:
             packet = Packets.envelope(Packets.ack(msg_id, ok=ok))
-            logger.info(f"Sending out envelope: {packet.packet.SerializeToString()=} | {packet.packet!r}")
             await enqueue_out(packet, client)
 
 
