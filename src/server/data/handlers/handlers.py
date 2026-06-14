@@ -97,19 +97,23 @@ class Handlers:
         players: list[str] = list(payload.players)
         join_token: str = payload.join_token  # for players[0]
         expires: int = payload.expires
+        logger.info(f"Got verified ICP [RM] {match_id=} {match_key=} {players=} {join_token=} {expires=}")
 
         ok = True
 
         try:
+            logger.info("{match_id=} Pass 1")
             match = Match(match_id, match_key, (players[0], join_token), expires, "waiting")
+            logger.info("{match_id=} Pass 2")
             ctx.match_manager.register_match(match)
+            logger.info("{match_id=} Pass 3")
         except Exception:
             logger.warning("Could not create match", exc_info=True)
             ok = False
         finally:
             packet = Packets.envelope(Packets.ack(msg_id, ok=ok))
+            logger.info(f"Sending out envelope: {packet.packet.SerializeToString()=} | {packet.packet!r}")
             await enqueue_out(packet, client)
-            return
 
 
 handlers: Dict[str, Dict[str, DataHandler]] = {

@@ -21,6 +21,7 @@ class SocketIOHandler:
         self.ctx = ctx
 
     async def enqueue_single_out(self, value: bytes, client: UDPAddress):
+        logger.info(f"Enqueuing {value!r} to {client!r}")
         await self.outgoing.put((value, client))
 
     async def enqueue_pending_in(self, loop: asyncio.AbstractEventLoop):
@@ -53,8 +54,10 @@ class SocketIOHandler:
 
     async def _send(self):
         data, client = await self.outgoing.get()
+        logger.info(f"Sending {data!r} to {client!r}")
         try:
             self.ctx.sock.sendto(data, client)
+            logger.info(f"Seemingly succeeded")
         finally:
             self.outgoing.task_done()
 
