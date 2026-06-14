@@ -1,29 +1,97 @@
 syntax = "proto3";
 
-enum POS_FACING {
-    NEG_X = 0;
-    POS_X = 1;
+package game.network;
+
+message Ack {
+    uint32 acknowledged_msg_id = 1;
+    bool ok = 2;
+}
+
+
+
+enum Facing {
+    FACING_NEG_X = 0;
+    FACING_POS_X = 1;
 }
 
 message Position {
-    POS_FACING facing = 1;
+    Facing facing = 1;
     float x = 2;
     float y = 3;
 }
 
-enum PLAYER_ACTION_TYPE {
-    JUMP = 0;
+
+
+message PlayerMove {
+    enum Type {
+        TYPE_JUMP = 0;
+    }
+
+    Type type = 1;
 }
 
-message PlayerActionReq {
-    PLAYER_ACTION_TYPE type = 1;
+
+
+message MatchmakingEnter {
+    string match_id = 1;
+    string join_token = 2;
+}
+
+message MatchmakingQuit {}
+
+
+
+message ServerToClientPacket {
+    // not bound to any id,
+    // the packet wrapper handles those
+    oneof payload {
+        Ack ack = 1;
+
+        Position position = 2;
+    }
+}
+
+message ClientToServerPacket {
+    oneof payload {
+        PlayerMove player_action = 1;
+
+        MatchmakingEnter matchmaking_enter = 2;
+        MatchmakingQuit matchmaking_quit = 3;
+    }
+}
+
+message InternalCommunicationPacket {
+    message RegisterMatch {
+        string match_id = 1;
+        repeated string players = 2;
+        string match_key = 3;
+        string join_token = 4;
+        uint64 expires = 5;
+    }
+
+    oneof payload {
+        RegisterMatch register_match = 1;
+    }
 }
 
 message Packet {
     uint32 msg_id = 1;
 
     oneof payload {
-        Position position = 2;
-        PlayerActionReq action_req = 3;
+        ServerToClientPacket server_to_client = 2;
+        ClientToServerPacket client_to_server = 3;
+        InternalCommunicationPacket icp = 4;
+    }
+}
+
+message SignedPacket {
+    Packet payload = 1;
+    bytes signature = 2;
+}
+
+message Envelope {
+    oneof payload {
+        Packet packet = 1;
+        SignedPacket signed_packet = 2;
     }
 }
