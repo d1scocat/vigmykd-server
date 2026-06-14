@@ -5,7 +5,7 @@ VENV/
 .venv/
 .env/
 
-generated/
+src/server/generated/proto/
 
 .env
 
