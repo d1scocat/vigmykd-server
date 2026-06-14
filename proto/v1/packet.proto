@@ -74,6 +74,11 @@ message InternalCommunicationPacket {
     }
 }
 
+message RespondBack {
+    string reply_host = 1;
+    uint32 reply_port = 2;
+}
+
 message Packet {
     uint32 msg_id = 1;
 
@@ -82,6 +87,8 @@ message Packet {
         ClientToServerPacket client_to_server = 3;
         InternalCommunicationPacket icp = 4;
     }
+
+    optional RespondBack reply_back = 5;
 }
 
 message SignedPacket {

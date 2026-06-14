@@ -71,6 +71,12 @@ class SocketIOHandler:
 
                 packet = signed_packet.payload
                 msg_id = packet.msg_id
+                
+                if packet.HasField("reply_back"):
+                    reply_addr = packet.reply_back.reply_host
+                    reply_port = packet.reply_back.reply_port
+                    client = (reply_addr, reply_port)
+
                 match packet.WhichOneof("payload"):
                     case "icp":
                         await self._dispatch(packet.icp, client, msg_id, "icp")
@@ -78,6 +84,12 @@ class SocketIOHandler:
             case "packet":
                 packet = envelope.packet
                 msg_id = packet.msg_id
+
+                if packet.HasField("reply_back"):
+                    reply_addr = packet.reply_back.reply_host
+                    reply_port = packet.reply_back.reply_port
+                    client = (reply_addr, reply_port)
+
                 match packet.WhichOneof("payload"):
                     case "server_to_client":
                         # Throw away (how tf did it get here anyway?)
