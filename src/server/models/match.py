@@ -97,6 +97,30 @@ class MatchManager:
     def find_queuing_matches(self) -> list[Match]:
         return [match for match in self._matches.values() if match._is_accepting()]
 
+    def find_player_by_id(self, player_id: uuid.UUID | str) -> Player | None:
+        if isinstance(player_id, str):
+            try:
+                player_id = uuid.UUID(player_id)
+            except:
+                return None
+
+        return next(
+            (k for k in [match.get_player(player_id) for match in self._matches.values()] if k),
+            None
+        )
+
+    def find_player_match(self, player_id: uuid.UUID | str) -> Match | None:
+        if isinstance(player_id, str):
+            try:
+                player_id = uuid.UUID(player_id)
+            except:
+                return None
+
+        return next(
+            (match for match in self._matches.values() if match.get_player(player_id) is not None),
+            None
+        )
+
     def add_player(
         self,
         match_id: str,

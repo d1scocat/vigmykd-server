@@ -94,12 +94,19 @@ class Handlers:
         try:
             # Before creating a match, check whether there are any matches queuing
             joined_existing = False
-            for match in ctx.match_manager.find_queuing_matches():
-                if ctx.match_manager.add_player(match.match_id, player_id, join_token):
-                    # to send a RegisterMatchResponse with the correct ID
-                    joined_match_id = match.match_id
-                    joined_existing = True
-                    break
+            
+            # Or maybe you're already in a match??
+            if ctx.match_manager.find_player_by_id(player_id):
+                joined_match_id = ctx.match_manager.find_player_match(player_id)
+                joined_existing = True
+
+            if not joined_existing:
+                for match in ctx.match_manager.find_queuing_matches():
+                    if ctx.match_manager.add_player(match.match_id, player_id, join_token):
+                        # to send a RegisterMatchResponse with the correct ID
+                        joined_match_id = match.match_id
+                        joined_existing = True
+                        break
 
             if not joined_existing:
                 match = Match(match_id, match_key, (player_id, join_token), expires)
