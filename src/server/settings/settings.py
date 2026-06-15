@@ -6,5 +6,6 @@ class Settings(BaseSettings):
     port: int = Field(...)
     queue_size: int = Field(...)
     signature: str = Field(...)
+    match_task_interval: float = Field(...)
 
     model_config = SettingsConfigDict(env_prefix="vigmykd_")

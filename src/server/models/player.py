@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import IntEnum
 from uuid import UUID
+from typing import Tuple
 
 
 class PlayerStatus(IntEnum):
@@ -16,3 +17,4 @@ class Player:
     uuid: UUID
     join_token: str | None
     status: PlayerStatus
+    addr: Tuple[str, int]

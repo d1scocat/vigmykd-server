@@ -1,9 +1,5 @@
 import asyncio
 
-from socket import socket
-
-import server.generated.v1.packet_pb2 as packet_pb2
-
 from server.context import ServerContext
 from server.data.all_handler import SocketIOHandler
 
@@ -11,9 +7,9 @@ from server.data.all_handler import SocketIOHandler
 class Server:
     def __init__(
         self,
-        sock: socket
+        ctx: ServerContext
     ):
-        self.ctx = ServerContext(sock)
+        self.ctx = ctx
         self.in_handler = SocketIOHandler(self.ctx)
 
     async def loop(self):

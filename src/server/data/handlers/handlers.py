@@ -102,14 +102,14 @@ class Handlers:
 
             if not joined_existing:
                 for match in ctx.match_manager.find_queuing_matches():
-                    if ctx.match_manager.add_player(match.match_id, player_id, join_token):
+                    if ctx.match_manager.add_player(match.match_id, player_id, join_token, client):
                         # to send a RegisterMatchResponse with the correct ID
                         joined_match_id = match.match_id
                         joined_existing = True
                         break
 
             if not joined_existing:
-                match = Match(match_id, match_key, (player_id, join_token), expires)
+                match = Match(match_id, match_key, (player_id, join_token, client), expires)
                 ctx.match_manager.register_match(match)
         except Exception:
             logger.warning("Could not create match", exc_info=True)

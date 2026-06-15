@@ -25,7 +25,7 @@ class Match:
         self,
         match_id: str,
         match_key: str,
-        founder: Tuple[uuid.UUID | str, str],
+        founder: Tuple[uuid.UUID | str, str, Tuple[str, int]],
         expires: int,
         status: MatchStatus = MatchStatus.WAITING_FOR_INIT,
         max_players: int = 2
@@ -33,7 +33,7 @@ class Match:
         self.match_id = match_id
         self._match_secret = match_key
 
-        uid, join_token = founder
+        uid, join_token, client = founder
         if isinstance(uid, str):
             try:
                 uid = uuid.UUID(uid)
@@ -42,7 +42,10 @@ class Match:
                 raise
 
         self._players = {uid: Player(
-            uuid=uid, join_token=join_token, status=PlayerStatus.WAITING_FOR_MATCHMAKING_START
+            uuid=uid,
+            join_token=join_token,
+            status=PlayerStatus.WAITING_FOR_MATCHMAKING_START,
+            addr=client
         )}
 
         self.expires = expires
@@ -55,8 +58,8 @@ class Match:
     def get_player(self, uuid: uuid.UUID) -> Player | None:
         return self._players.get(uuid)
 
-    def _add_player(self, uuid: uuid.UUID, join_token: str | None):
-        player = Player(uuid, join_token, PlayerStatus.IN_MATCHMAKING_QUEUE)
+    def _add_player(self, uuid: uuid.UUID, join_token: str | None, client: Tuple[str, int]):
+        player = Player(uuid, join_token, PlayerStatus.IN_MATCHMAKING_QUEUE, client)
         self._players[uuid] = player
 
     def _is_accepting(self) -> bool:
@@ -125,7 +128,8 @@ class MatchManager:
         self,
         match_id: str,
         player_id: uuid.UUID | str,
-        join_token: str | None
+        join_token: str | None,
+        client: Tuple[str, int]
     ) -> bool:
         if isinstance(player_id, str):
             try:
@@ -140,7 +144,7 @@ class MatchManager:
         if not match._is_accepting():
             return False
 
-        match._add_player(player_id, join_token)
+        match._add_player(player_id, join_token, client)
         return True
 
     def start_match(self, match_id: str):
