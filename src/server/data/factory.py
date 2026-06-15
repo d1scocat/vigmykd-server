@@ -33,6 +33,21 @@ class Packets:
         return packet
 
     @staticmethod
+    def matchmaking_enter_response(
+        match_id: str,
+        msg_id: int | None = None
+    ):
+        """`envelope()` a packet before sending!"""
+        if msg_id is None:
+            msg_id = Packets.get_next_id()
+
+        packet = packet_pb2.Packet()
+        packet.msg_id = msg_id
+        packet.server_to_client.matchmaking_enter_response.match_id = match_id
+
+        return packet
+
+    @staticmethod
     def register_match_response(
         joined_match_id: str,
         old_match_id: str,

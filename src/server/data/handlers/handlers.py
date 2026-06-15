@@ -55,6 +55,8 @@ class Handlers:
                 raise ActionFailed
 
             match.let_matchmake(player)
+            packet = Packets.envelope(Packets.matchmaking_enter_response(match_id))
+            await enqueue_out(packet, client)
         except ActionFailed:
             ok = False
         finally:

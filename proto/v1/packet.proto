@@ -37,6 +37,10 @@ message MatchmakingEnter {
     string join_token = 2;
 }
 
+message MatchmakingEnterResponse {
+    string match_id = 1;
+}
+
 message MatchmakingQuit {}
 
 
@@ -48,6 +52,7 @@ message ServerToClientPacket {
         Ack ack = 1;
 
         Position position = 2;
+        MatchmakingEnterResponse matchmaking_enter_response = 3;
     }
 }
 
