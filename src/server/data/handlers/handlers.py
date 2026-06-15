@@ -95,7 +95,7 @@ class Handlers:
             # Before creating a match, check whether there are any matches queuing
             joined_existing = False
             for match in ctx.match_manager.find_queuing_matches():
-                if ctx.match_manager.add_player(match.match_id, player_id):
+                if ctx.match_manager.add_player(match.match_id, player_id, join_token):
                     # to send a RegisterMatchResponse with the correct ID
                     joined_match_id = match.match_id
                     joined_existing = True

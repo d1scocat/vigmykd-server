@@ -55,8 +55,8 @@ class Match:
     def get_player(self, uuid: uuid.UUID) -> Player | None:
         return self._players.get(uuid)
 
-    def _add_player(self, uuid: uuid.UUID):
-        player = Player(uuid, None, PlayerStatus.IN_MATCHMAKING_QUEUE)
+    def _add_player(self, uuid: uuid.UUID, join_token: str | None):
+        player = Player(uuid, join_token, PlayerStatus.IN_MATCHMAKING_QUEUE)
         self._players[uuid] = player
 
     def _is_accepting(self) -> bool:
@@ -97,7 +97,12 @@ class MatchManager:
     def find_queuing_matches(self) -> list[Match]:
         return [match for match in self._matches.values() if match._is_accepting()]
 
-    def add_player(self, match_id: str, player_id: uuid.UUID | str) -> bool:
+    def add_player(
+        self,
+        match_id: str,
+        player_id: uuid.UUID | str,
+        join_token: str | None
+    ) -> bool:
         if isinstance(player_id, str):
             try:
                 player_id = uuid.UUID(player_id)
@@ -111,7 +116,7 @@ class MatchManager:
         if not match._is_accepting():
             return False
 
-        match._add_player(player_id)
+        match._add_player(player_id, join_token)
         return True
 
     def start_match(self, match_id: str):
