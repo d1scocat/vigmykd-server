@@ -4,7 +4,7 @@ import server.generated.v1.packet_pb2 as packet_pb2
 
 from server.context import ServerContext
 from server.data.factory import Packets
-from server.models.match import Match
+from server.models.match import Match, MatchStatus
 from server.log import logger
 
 from google.protobuf.message import Message
@@ -82,21 +82,38 @@ class Handlers:
     ):
         match_id: str = payload.match_id
         match_key: str = payload.match_key
-        players: list[str] = list(payload.players)
+        player_id: str = list(payload.players)[0]
         join_token: str = payload.join_token  # for players[0]
         expires: int = payload.expires
 
         ok = True
+        joined_match_id = match_id
 
         try:
-            match = Match(match_id, match_key, (players[0], join_token), expires, "waiting")
-            ctx.match_manager.register_match(match)
+            # Before creating a match, check whether there are any matches queuing
+            joined_existing = False
+            for match in ctx.match_manager.find_queuing_matches():
+                if ctx.match_manager.add_player(match.match_id, player_id):
+                    # to send a RegisterMatchResponse with the correct ID
+                    joined_match_id = match.match_id
+                    joined_existing = True
+                    break
+
+            if not joined_existing:
+                match = Match(match_id, match_key, (player_id, join_token), expires)
+                ctx.match_manager.register_match(match)
         except Exception:
             logger.warning("Could not create match", exc_info=True)
             ok = False
         finally:
             packet = Packets.envelope(Packets.ack(msg_id, ok=ok))
             await enqueue_out(packet, client)
+
+            if ok:
+                await enqueue_out(Packets.envelope(Packets.register_match_response(
+                    joined_match_id=joined_match_id,
+                    old_match_id=match_id
+                )), client)
 
 
 handlers: Dict[str, Dict[str, DataHandler]] = {

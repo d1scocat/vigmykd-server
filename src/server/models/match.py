@@ -1,9 +1,16 @@
 import uuid
 
+from enum import IntEnum
 from typing import Dict, Tuple
 
 from server.log import logger
 from server.models.player import Player, PlayerStatus
+
+
+class MatchStatus(IntEnum):
+    WAITING_FOR_INIT = 0
+    ACCEPTING_PLAYERS = 1
+    IN_GAME = 2
 
 
 class Match:
@@ -11,7 +18,8 @@ class Match:
     _match_secret: str
     _players: Dict[uuid.UUID, Player]
     expires: int
-    status: str
+    status: MatchStatus
+    _max_players: int
 
     def __init__(
         self,
@@ -19,7 +27,8 @@ class Match:
         match_key: str,
         founder: Tuple[uuid.UUID | str, str],
         expires: int,
-        status: str
+        status: MatchStatus = MatchStatus.WAITING_FOR_INIT,
+        max_players: int = 2
     ) -> None:
         self.match_id = match_id
         self._match_secret = match_key
@@ -38,9 +47,21 @@ class Match:
 
         self.expires = expires
         self.status = status
+        self._max_players = max_players
+
+    def start_accepting(self):
+        self.status = MatchStatus.ACCEPTING_PLAYERS
 
     def get_player(self, uuid: uuid.UUID) -> Player | None:
         return self._players.get(uuid)
+
+    def _add_player(self, uuid: uuid.UUID):
+        player = Player(uuid, None, PlayerStatus.IN_MATCHMAKING_QUEUE)
+        self._players[uuid] = player
+
+    def _is_accepting(self) -> bool:
+        return (self.status == MatchStatus.ACCEPTING_PLAYERS) \
+            and (len(self._players) < self._max_players)
 
     def get_player_by_token(self, join_token: str) -> Player | None:
         return next(
@@ -68,16 +89,36 @@ class MatchManager:
         if mid in self._matches:
             return  # fail silently for idempotency
         self._matches[mid] = match
+        match.start_accepting()
 
     def drop_match(self, match_id: str):
-        self._matches.pop(match_id, None)
-        # other logic later
+        self._matches.pop(match_id, None)  # other logic later
+
+    def find_queuing_matches(self) -> list[Match]:
+        return [match for match in self._matches.values() if match._is_accepting()]
+
+    def add_player(self, match_id: str, player_id: uuid.UUID | str) -> bool:
+        if isinstance(player_id, str):
+            try:
+                player_id = uuid.UUID(player_id)
+            except Exception:
+                return False
+
+        if match_id not in self._matches:
+            return False
+
+        match = self._matches[match_id]
+        if not match._is_accepting():
+            return False
+
+        match._add_player(player_id)
+        return True
 
     def start_match(self, match_id: str):
         if match_id not in self._matches:
             return
 
         match = self._matches[match_id]
-        match.status = "started"
+        match.status = MatchStatus.IN_GAME
         for player in match._players.values():
             player.status = PlayerStatus.ENTERING_GAME
