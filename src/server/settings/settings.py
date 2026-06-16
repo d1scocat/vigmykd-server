@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     match_task_interval: float = Field(...)
 
     max_ack_attempts: int = Field(...)
-    reack_interval: int = Field(...)
+    reack_interval: float = Field(...)
     packet_size: int = Field(...)
     keep_processed: int = Field(...)
 
