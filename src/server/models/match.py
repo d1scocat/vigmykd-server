@@ -66,7 +66,7 @@ class Match:
     def get_player(self, uuid: uuid.UUID) -> Player | None:
         return self._players.get(uuid)
 
-    def _add_player(self, uuid: uuid.UUID, join_token: str | None, client: Tuple[str, int] | None):
+    def _add_player(self, uuid: uuid.UUID, join_token: str | None, client: tuple[str, int] | None):
         player = Player(uuid, join_token, PlayerStatus.IN_MATCHMAKING_QUEUE, client)
         self._players[uuid] = player
 
@@ -159,7 +159,7 @@ class MatchManager:
         match_id: str,
         player_id: uuid.UUID | str,
         join_token: str | None,
-        client: Tuple[str, int] | None
+        client: tuple[str, int] | None
     ) -> bool:
         if isinstance(player_id, str):
             try:
