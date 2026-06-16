@@ -9,15 +9,12 @@ from typing import overload
 
 
 class Packets:
-    # _id = 20_000_000_000
+    _id = 500_000_000 - 1
 
     @staticmethod
     def get_next_id() -> int:
-        # STC messages don't require IDs generally, because the server does not
-        # expect an Ack from the client. Just return 0, uncomment this in the future if needed
-        # Packets._id += 1
-        # return Packets._id
-        return 0
+        Packets._id += 1
+        return Packets._id
 
     @staticmethod
     def ack(
@@ -61,6 +58,20 @@ class Packets:
         packet.msg_id = msg_id
         packet.icp.register_match_response.joined_match_id = joined_match_id
         packet.icp.register_match_response.old_match_id = old_match_id
+
+        return packet
+
+    @staticmethod
+    def inform_match_start(
+        msg_id: int | None = None
+    ):
+        """`envelope()` a packet before sending!"""
+        if msg_id is None:
+            msg_id = Packets.get_next_id()
+
+        packet = packet_pb2.Packet()
+        packet.msg_id = msg_id
+        packet.server_to_client.inform_match_start.SetInParent()
 
         return packet
 

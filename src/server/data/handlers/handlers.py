@@ -3,6 +3,7 @@ from typing import Awaitable, Callable, Dict, TypeAlias
 import server.generated.v1.packet_pb2 as packet_pb2
 
 from server.context import ServerContext
+from server.data.all_handler import SocketIOHandler
 from server.data.factory import Packets
 from server.models.match import Match, MatchStatus
 from server.log import logger
@@ -11,9 +12,8 @@ from google.protobuf.message import Message
 
 
 UDPAddress: TypeAlias = tuple[str, int]
-EnqueueOut: TypeAlias = Callable[[bytes, UDPAddress], Awaitable[None]]
 DataHandler: TypeAlias = Callable[
-    [Message, UDPAddress, ServerContext, EnqueueOut, int],
+    [Message, UDPAddress, ServerContext, SocketIOHandler, int],
     Awaitable[None]
 ]
 
@@ -27,7 +27,7 @@ class Handlers:
         payload: packet_pb2.PlayerMove,
         client: UDPAddress,
         ctx: ServerContext,
-        enqueue_out: EnqueueOut,
+        io_handler: SocketIOHandler,
         msg_id: int,
     ):
         ...
@@ -37,7 +37,7 @@ class Handlers:
         payload: packet_pb2.MatchmakingEnter,
         client: UDPAddress,
         ctx: ServerContext,
-        enqueue_out: EnqueueOut,
+        io_handler: SocketIOHandler,
         msg_id: int,
     ):
         match_id = payload.match_id
@@ -56,12 +56,12 @@ class Handlers:
 
             match.let_matchmake(player)
             packet = Packets.envelope(Packets.matchmaking_enter_response(match_id))
-            await enqueue_out(packet, client)
+            await io_handler.enqueue_single_out(packet, client)
         except ActionFailed:
             ok = False
         finally:
             packet = Packets.envelope(Packets.ack(msg_id, ok=ok))
-            await enqueue_out(packet, client)
+            await io_handler.enqueue_single_out(packet, client)
             return
 
     @staticmethod
@@ -69,7 +69,7 @@ class Handlers:
         payload: packet_pb2.MatchmakingQuit,
         client: UDPAddress,
         ctx: ServerContext,
-        enqueue_out: EnqueueOut,
+        io_handler: SocketIOHandler,
         msg_id: int,
     ):
         ...
@@ -79,7 +79,7 @@ class Handlers:
         payload: packet_pb2.InternalCommunicationPacket.RegisterMatch,
         client: UDPAddress,
         ctx: ServerContext,
-        enqueue_out: EnqueueOut,
+        io_handler: SocketIOHandler,
         msg_id: int,
     ):
         match_id: str = payload.match_id
@@ -96,8 +96,9 @@ class Handlers:
             joined_existing = False
             
             # Or maybe you're already in a match??
-            if ctx.match_manager.find_player_by_id(player_id):
-                joined_match_id = ctx.match_manager.find_player_match(player_id)
+            joined_match = ctx.match_manager.find_player_match(player_id)
+            if joined_match is not None:
+                joined_match_id = joined_match.match_id
                 joined_existing = True
 
             if not joined_existing:
@@ -116,13 +117,18 @@ class Handlers:
             ok = False
         finally:
             packet = Packets.envelope(Packets.ack(msg_id, ok=ok))
-            await enqueue_out(packet, client)
+            await io_handler.enqueue_single_out(packet, client)
 
             if ok:
-                await enqueue_out(Packets.envelope(Packets.register_match_response(
-                    joined_match_id=joined_match_id,
-                    old_match_id=match_id
-                )), client)
+                await io_handler.enqueue_single_out(
+                    Packets.envelope(
+                        Packets.register_match_response(
+                            joined_match_id=joined_match_id,
+                            old_match_id=match_id
+                        )
+                    ),
+                    client
+                )
 
 
 handlers: Dict[str, Dict[str, DataHandler]] = {

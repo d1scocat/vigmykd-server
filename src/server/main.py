@@ -3,6 +3,7 @@ import asyncio
 from socket import socket, AF_INET, SOCK_DGRAM
 
 from server.context import ServerContext
+from server.data.all_handler import SocketIOHandler
 from server.models.match import MatchManager
 from server.log import logger
 from server.settings import config
@@ -25,10 +26,21 @@ async def main():
             match_manager=match_manager
         )
 
-        task_manager = TaskManager(ctx=ctx)
+        io_handler = SocketIOHandler(
+            ctx=ctx,
+            loop=asyncio.get_running_loop()
+        )
+
+        task_manager = TaskManager(
+            ctx=ctx,
+            io_handler=io_handler
+        )
         await task_manager.start()
 
-        server = Server(ctx=ctx)
+        server = Server(
+            ctx=ctx,
+            io_handler=io_handler
+        )
         await server.loop()
 
 

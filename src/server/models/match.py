@@ -1,8 +1,10 @@
 import uuid
 
 from enum import IntEnum
+from types import MappingProxyType
 from typing import Dict, Tuple
 
+from server.data.all_handler import SocketIOHandler
 from server.log import logger
 from server.models.player import Player, PlayerStatus
 
@@ -19,7 +21,7 @@ class Match:
     _players: Dict[uuid.UUID, Player]
     expires: int
     status: MatchStatus
-    _max_players: int
+    max_players: int
 
     def __init__(
         self,
@@ -50,7 +52,11 @@ class Match:
 
         self.expires = expires
         self.status = status
-        self._max_players = max_players
+        self.max_players = max_players
+
+    @property
+    def players(self):
+        return MappingProxyType(self._players)
 
     def start_accepting(self):
         self.status = MatchStatus.ACCEPTING_PLAYERS
@@ -64,7 +70,7 @@ class Match:
 
     def _is_accepting(self) -> bool:
         return (self.status == MatchStatus.ACCEPTING_PLAYERS) \
-            and (len(self._players) < self._max_players)
+            and (len(self._players) < self.max_players)
 
     def get_player_by_token(self, join_token: str) -> Player | None:
         return next(
@@ -83,6 +89,10 @@ class Match:
 class MatchManager:
     def __init__(self) -> None:
         self._matches: Dict[str, Match] = {}
+
+    @property
+    def matches(self):
+        return MappingProxyType(self._matches)
 
     def get_match(self, match_id: str):
         return self._matches.get(match_id)
@@ -147,7 +157,7 @@ class MatchManager:
         match._add_player(player_id, join_token, client)
         return True
 
-    def start_match(self, match_id: str):
+    async def start_match(self, match_id: str, io_handler: SocketIOHandler):
         if match_id not in self._matches:
             return
 
@@ -155,3 +165,4 @@ class MatchManager:
         match.status = MatchStatus.IN_GAME
         for player in match._players.values():
             player.status = PlayerStatus.ENTERING_GAME
+            await player.inform_game_start(match, io_handler)

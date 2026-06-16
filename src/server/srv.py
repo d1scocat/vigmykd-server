@@ -7,17 +7,18 @@ from server.data.all_handler import SocketIOHandler
 class Server:
     def __init__(
         self,
-        ctx: ServerContext
+        ctx: ServerContext,
+        io_handler: SocketIOHandler
     ):
         self.ctx = ctx
-        self.in_handler = SocketIOHandler(self.ctx)
+        self.io_handler = io_handler
 
     async def loop(self):
-        loop = asyncio.get_running_loop()
-        asyncio.create_task(self.in_handler.enqueue_pending_in(loop))
+        asyncio.create_task(self.io_handler.enqueue_pending_in())
 
         for _ in range(4):
-            asyncio.create_task(self.in_handler.recv_worker())
-        asyncio.create_task(self.in_handler.send_worker())
+            asyncio.create_task(self.io_handler.recv_worker())
+        asyncio.create_task(self.io_handler.send_worker())
+        asyncio.create_task(self.io_handler.send_unacked_worker())
 
         await asyncio.Event().wait()

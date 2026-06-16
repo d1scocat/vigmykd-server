@@ -43,6 +43,12 @@ message MatchmakingEnterResponse {
 
 message MatchmakingQuit {}
 
+message MatchmakingQuitResponse {
+    string match_id = 1;
+}
+
+message InformMatchStart {}
+
 
 
 message ServerToClientPacket {
@@ -53,15 +59,18 @@ message ServerToClientPacket {
 
         Position position = 2;
         MatchmakingEnterResponse matchmaking_enter_response = 3;
+        MatchmakingQuitResponse matchmaking_quit_response = 4;
+        InformMatchStart inform_match_start = 5;
     }
 }
 
 message ClientToServerPacket {
     oneof payload {
-        PlayerMove player_action = 1;
+        Ack ack = 1;
 
-        MatchmakingEnter matchmaking_enter = 2;
-        MatchmakingQuit matchmaking_quit = 3;
+        PlayerMove player_action = 2;
+        MatchmakingEnter matchmaking_enter = 3;
+        MatchmakingQuit matchmaking_quit = 4;
     }
 }
 
@@ -85,11 +94,6 @@ message InternalCommunicationPacket {
     }
 }
 
-message RespondBack {
-    string reply_host = 1;
-    uint32 reply_port = 2;
-}
-
 message Packet {
     uint32 msg_id = 1;
 
@@ -98,8 +102,6 @@ message Packet {
         ClientToServerPacket client_to_server = 3;
         InternalCommunicationPacket icp = 4;
     }
-
-    optional RespondBack reply_back = 5;
 }
 
 message SignedPacket {

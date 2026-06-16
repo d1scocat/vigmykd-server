@@ -1,3 +1,6 @@
+from server.data.all_handler import SocketIOHandler
+from server.data.factory import Packets
+
 from dataclasses import dataclass
 from enum import IntEnum
 from uuid import UUID
@@ -18,3 +21,14 @@ class Player:
     join_token: str | None
     status: PlayerStatus
     addr: Tuple[str, int]
+
+    async def inform_game_start(
+        self,
+        match: 'server.models.match.Match',
+        io_handler: SocketIOHandler
+    ):
+        packet = Packets.inform_match_start()
+        msg_id = packet.msg_id
+        data = Packets.envelope(packet)
+
+        await io_handler.enqueue_single_out(data, self.addr, True, msg_id)

@@ -3,6 +3,7 @@ import time
 from typing import Awaitable, Callable
 
 from server.context import ServerContext
+from server.data.all_handler import SocketIOHandler
 from server.log import logger
 from server.tasks.match_starter import MatchStarter
 
@@ -10,10 +11,14 @@ from server.tasks.match_starter import MatchStarter
 class TaskManager:
     def __init__(
         self,
-        ctx: ServerContext
+        ctx: ServerContext,
+        io_handler: SocketIOHandler
     ):
         self._tasks = [
-            MatchStarter(match_manager=ctx.match_manager)
+            MatchStarter(
+                match_manager=ctx.match_manager,
+                io_handler=io_handler
+            )
         ]
 
     async def start(self):

@@ -8,4 +8,9 @@ class Settings(BaseSettings):
     signature: str = Field(...)
     match_task_interval: float = Field(...)
 
+    max_ack_attempts: int = Field(...)
+    reack_interval: int = Field(...)
+    packet_size: int = Field(...)
+    keep_processed: int = Field(...)
+
     model_config = SettingsConfigDict(env_prefix="vigmykd_")
