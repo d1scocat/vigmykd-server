@@ -28,7 +28,7 @@ class TaskManager:
         for idx, task in enumerate(self._tasks):
             task_name = task.__class__.__name__
             try:
-                logger.info(f"⌚ {idx}/{amount}. Task {task_name} "
+                logger.info(f"⌚ {idx + 1}/{amount}. Task {task_name} "
                             f"started in {await self.gettimeof(task.start):3f}ms")
             except Exception:
                 logger.warning(f"⚠️ Failed to start task {task_name}")
