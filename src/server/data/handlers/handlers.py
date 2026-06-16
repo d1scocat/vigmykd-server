@@ -47,10 +47,12 @@ class Handlers:
         try:  # exception driven flow management
             match = ctx.match_manager.get_match(match_id)
             if not match:
+                logger.info(f"For client {client} no match {match_id} found")
                 raise ActionFailed
 
             player = match.get_player_by_token(join_token)
             if not player:
+                logger.info(f"For client {client} no player by join token {join_token} found")
                 raise ActionFailed
 
             player.claim_address(client)
