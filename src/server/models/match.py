@@ -2,7 +2,6 @@ import uuid
 
 from enum import IntEnum
 from types import MappingProxyType
-from typing import Dict, Tuple
 
 from server.log import logger
 from server.models.player import Player, PlayerStatus
@@ -17,7 +16,7 @@ class MatchStatus(IntEnum):
 class Match:
     match_id: str
     _match_secret: str
-    _players: Dict[uuid.UUID, Player]
+    _players: dict[uuid.UUID, Player]
     expires: int
     status: MatchStatus
     max_players: int
@@ -26,7 +25,7 @@ class Match:
         self,
         match_id: str,
         match_key: str,
-        founder: Tuple[uuid.UUID | str, str, Tuple[str, int]],
+        founder: tuple[uuid.UUID | str, str, tuple[str, int]],
         expires: int,
         status: MatchStatus = MatchStatus.WAITING_FOR_INIT,
         max_players: int = 2
@@ -63,9 +62,12 @@ class Match:
     def get_player(self, uuid: uuid.UUID) -> Player | None:
         return self._players.get(uuid)
 
-    def _add_player(self, uuid: uuid.UUID, join_token: str | None, client: Tuple[str, int]):
+    def _add_player(self, uuid: uuid.UUID, join_token: str | None, client: tuple[str, int]):
         player = Player(uuid, join_token, PlayerStatus.IN_MATCHMAKING_QUEUE, client)
         self._players[uuid] = player
+
+    def _remove_player(self, uuid: uuid.UUID):
+        self._players.pop(uuid, None)
 
     def _is_accepting(self) -> bool:
         return (self.status == MatchStatus.ACCEPTING_PLAYERS) \
@@ -74,6 +76,12 @@ class Match:
     def get_player_by_token(self, join_token: str) -> Player | None:
         return next(
             (player for player in self._players.values() if player.join_token == join_token),
+            None
+        )
+
+    def get_player_by_address(self, address: tuple[str, int]):
+        return next(
+            (player for player in self._players.values() if player.addr == address),
             None
         )
 
@@ -87,7 +95,7 @@ class Match:
 
 class MatchManager:
     def __init__(self) -> None:
-        self._matches: Dict[str, Match] = {}
+        self._matches: dict[str, Match] = {}
 
     @property
     def matches(self):
@@ -113,11 +121,20 @@ class MatchManager:
         if isinstance(player_id, str):
             try:
                 player_id = uuid.UUID(player_id)
-            except:
+            except Exception:
                 return None
 
         return next(
-            (k for k in [match.get_player(player_id) for match in self._matches.values()] if k),
+            (p for p in [match.get_player(player_id) for match in self._matches.values()] if p),
+            None
+        )
+
+    def find_player_by_addr(self, address: tuple[str, int]) -> Player | None:
+        return next(
+            (k for k in [match.get_player_by_address(address)
+                         for match
+                         in self._matches.values()]
+                if k),
             None
         )
 
@@ -125,7 +142,7 @@ class MatchManager:
         if isinstance(player_id, str):
             try:
                 player_id = uuid.UUID(player_id)
-            except:
+            except Exception:
                 return None
 
         return next(
@@ -138,7 +155,7 @@ class MatchManager:
         match_id: str,
         player_id: uuid.UUID | str,
         join_token: str | None,
-        client: Tuple[str, int]
+        client: tuple[str, int]
     ) -> bool:
         if isinstance(player_id, str):
             try:
@@ -155,6 +172,19 @@ class MatchManager:
 
         match._add_player(player_id, join_token, client)
         return True
+
+    def quit_player(self, player_id: uuid.UUID | str):
+        if isinstance(player_id, str):
+            try:
+                player_id = uuid.UUID(player_id)
+            except Exception:
+                return False
+
+        match = self.find_player_match(player_id)
+        if match:
+            match._remove_player(player_id)
+            if len(match.players) == 0:
+                self._matches.pop(match.match_id, None)
 
     async def start_match(
         self,
