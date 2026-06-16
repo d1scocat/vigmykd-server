@@ -3,7 +3,6 @@ import hmac
 
 import server.generated.v1.packet_pb2 as packet_pb2
 
-from server.models.player import Facing, Player
 from server.settings import config
 
 from typing import overload
@@ -62,12 +61,14 @@ class Packets:
 
     @staticmethod
     def request_match_info_response(
-        players: list[Player],
+        players: list['server.models.player.Player'],
         your_id: str,
         rng_seed: int,
         msg_id: int | None = None
     ):
         """`envelope()` a packet before sending!"""
+        from server.models.player import Facing
+
         if msg_id is None:
             msg_id = Packets.get_next_id()
 
