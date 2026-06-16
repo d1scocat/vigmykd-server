@@ -23,6 +23,9 @@ class Player:
     status: PlayerStatus
     addr: Tuple[str, int]
 
+    def claim_address(self, address: Tuple[str, int]):
+        self.addr = address
+
     async def inform_game_start(
         self,
         match: 'server.models.match.Match',

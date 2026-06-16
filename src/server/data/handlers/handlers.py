@@ -53,7 +53,9 @@ class Handlers:
             if not player:
                 raise ActionFailed
 
+            player.claim_address(client)
             match.let_matchmake(player)
+
             packet = Packets.envelope(Packets.matchmaking_enter_response(match_id))
             await io_handler.enqueue_single_out(packet, client)
         except ActionFailed:
