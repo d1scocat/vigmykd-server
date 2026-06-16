@@ -5,6 +5,8 @@ from enum import IntEnum
 from uuid import UUID
 from typing import Tuple
 
+from server.log import logger
+
 
 class PlayerStatus(IntEnum):
     NOT_IN_GAME_OR_QUEUE = -1
@@ -29,5 +31,6 @@ class Player:
         packet = Packets.inform_match_start()
         msg_id = packet.msg_id
         data = Packets.envelope(packet)
+        logger.info("Sending packet 'inform_match_start' to %r", self.addr)
 
         await io_handler.enqueue_single_out(data, self.addr, True, msg_id)
