@@ -53,6 +53,7 @@ class Handlers:
             if not player:
                 raise ActionFailed
 
+            logger.debug(f"Player {player.uuid!r} claimed address {client!r}")
             player.claim_address(client)
             match.let_matchmake(player)
 
@@ -124,14 +125,15 @@ class Handlers:
 
             if not joined_existing:
                 for match in ctx.match_manager.find_queuing_matches():
-                    if ctx.match_manager.add_player(match.match_id, player_id, join_token, client):
+                    if ctx.match_manager.add_player(match.match_id, player_id, join_token, None):
                         # to send a RegisterMatchResponse with the correct ID
                         joined_match_id = match.match_id
                         joined_existing = True
                         break
 
             if not joined_existing:
-                match = Match(match_id, match_key, (player_id, join_token, client), expires)
+                # don't set client, let `MatchmakingEnter` do that
+                match = Match(match_id, match_key, (player_id, join_token, None), expires)
                 ctx.match_manager.register_match(match)
         except Exception:
             logger.warning("Could not create match", exc_info=True)
