@@ -1,4 +1,3 @@
-from server.data.all_handler import SocketIOHandler
 from server.data.factory import Packets
 
 from dataclasses import dataclass
@@ -25,7 +24,7 @@ class Player:
     async def inform_game_start(
         self,
         match: 'server.models.match.Match',
-        io_handler: SocketIOHandler
+        io_handler: 'server.data.all_handler.SocketIOHandler'
     ):
         packet = Packets.inform_match_start()
         msg_id = packet.msg_id
