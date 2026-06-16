@@ -3,9 +3,8 @@ from typing import Awaitable, Callable, Dict, TypeAlias
 import server.generated.v1.packet_pb2 as packet_pb2
 
 from server.context import ServerContext
-from server.data.all_handler import SocketIOHandler
 from server.data.factory import Packets
-from server.models.match import Match, MatchStatus
+from server.models.match import Match
 from server.log import logger
 
 from google.protobuf.message import Message
@@ -13,7 +12,7 @@ from google.protobuf.message import Message
 
 UDPAddress: TypeAlias = tuple[str, int]
 DataHandler: TypeAlias = Callable[
-    [Message, UDPAddress, ServerContext, SocketIOHandler, int],
+    [Message, UDPAddress, ServerContext, 'server.data.all_handler.SocketIOHandler', int],
     Awaitable[None]
 ]
 
@@ -27,7 +26,7 @@ class Handlers:
         payload: packet_pb2.PlayerMove,
         client: UDPAddress,
         ctx: ServerContext,
-        io_handler: SocketIOHandler,
+        io_handler: 'server.data.all_handler.SocketIOHandler',
         msg_id: int,
     ):
         ...
@@ -37,7 +36,7 @@ class Handlers:
         payload: packet_pb2.MatchmakingEnter,
         client: UDPAddress,
         ctx: ServerContext,
-        io_handler: SocketIOHandler,
+        io_handler: 'server.data.all_handler.SocketIOHandler',
         msg_id: int,
     ):
         match_id = payload.match_id
@@ -69,7 +68,7 @@ class Handlers:
         payload: packet_pb2.MatchmakingQuit,
         client: UDPAddress,
         ctx: ServerContext,
-        io_handler: SocketIOHandler,
+        io_handler: 'server.data.all_handler.SocketIOHandler',
         msg_id: int,
     ):
         ...
@@ -79,7 +78,7 @@ class Handlers:
         payload: packet_pb2.InternalCommunicationPacket.RegisterMatch,
         client: UDPAddress,
         ctx: ServerContext,
-        io_handler: SocketIOHandler,
+        io_handler: 'server.data.all_handler.SocketIOHandler',
         msg_id: int,
     ):
         match_id: str = payload.match_id
