@@ -3,6 +3,7 @@ import hmac
 
 import server.generated.v1.packet_pb2 as packet_pb2
 
+from server.models.player import Facing, Player
 from server.settings import config
 
 from typing import overload
@@ -56,6 +57,41 @@ class Packets:
         packet = packet_pb2.Packet()
         packet.msg_id = msg_id
         packet.server_to_client.matchmaking_quit_response.match_id = match_id
+
+        return packet
+
+    @staticmethod
+    def request_match_info_response(
+        players: list[Player],
+        your_id: str,
+        rng_seed: int,
+        msg_id: int | None = None
+    ):
+        """`envelope()` a packet before sending!"""
+        if msg_id is None:
+            msg_id = Packets.get_next_id()
+
+        packet = packet_pb2.Packet()
+        packet.msg_id = msg_id
+        packet.server_to_client.request_match_info_response.your_id = your_id
+        packet.server_to_client.request_match_info_response.rng_seed = rng_seed
+
+        packet_players = []
+        for player in players:
+            data = packet_pb2.PlayerData()
+            data.id = player.player_id
+            data.name = player.name
+            data.position.x = player.position.x
+            data.position.y = player.position.y
+
+            data.position.facing = \
+                packet_pb2.Facing.FACING_NEG_X \
+                if player.position.facing == Facing.NEG_X \
+                else packet_pb2.Facing.FACING_POS_X
+
+            packet_players.append(data)
+
+        packet.server_to_client.request_match_info_response.players.extend(packet_players)
 
         return packet
 

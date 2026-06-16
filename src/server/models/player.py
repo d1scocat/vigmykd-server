@@ -16,12 +16,28 @@ class PlayerStatus(IntEnum):
     IN_GAME = 3
 
 
+class Facing(IntEnum):
+    NEG_X = 0
+    POS_X = 1
+
+
+@dataclass
+class Position:
+    facing: Facing
+    x: float = 0
+    y: float = 0
+    vel_x: float = 0
+    vel_dy: float = 0
+
+
 @dataclass
 class Player:
-    uuid: UUID
+    player_id: UUID
+    name: str
     join_token: str | None
     status: PlayerStatus
     addr: Tuple[str, int] | None
+    position: Position
 
     def claim_address(self, address: Tuple[str, int]):
         self.addr = address
@@ -33,7 +49,7 @@ class Player:
     ):
         if not self.addr:
             logger.warning("Cannot inform player %r of start because they have no address",
-                           self.uuid)
+                           self.player_id)
             return
 
         packet = Packets.inform_match_start()

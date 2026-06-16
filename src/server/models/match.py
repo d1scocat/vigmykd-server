@@ -1,10 +1,12 @@
 import uuid
+import random
+import secrets
 
 from enum import IntEnum
 from types import MappingProxyType
 
 from server.log import logger
-from server.models.player import Player, PlayerStatus
+from server.models.player import Facing, Position, Player, PlayerStatus
 
 
 class MatchStatus(IntEnum):
@@ -25,7 +27,7 @@ class Match:
         self,
         match_id: str,
         match_key: str,
-        founder: tuple[uuid.UUID | str, str, tuple[str, int]],
+        founder: tuple[uuid.UUID | str, str, str, tuple[str, int] | None],
         expires: int,
         status: MatchStatus = MatchStatus.WAITING_FOR_INIT,
         max_players: int = 2
@@ -33,7 +35,10 @@ class Match:
         self.match_id = match_id
         self._match_secret = match_key
 
-        uid, join_token, client = founder
+        self.seed = secrets.randbits(64)
+        random.seed(self.seed)
+
+        uid, name, join_token, client = founder
         if isinstance(uid, str):
             try:
                 uid = uuid.UUID(uid)
@@ -42,10 +47,12 @@ class Match:
                 raise
 
         self._players = {uid: Player(
-            uuid=uid,
+            player_id=uid,
+            name=name,
             join_token=join_token,
             status=PlayerStatus.WAITING_FOR_MATCHMAKING_START,
-            addr=client
+            addr=client,
+            position=Position(Facing.POS_X)
         )}
 
         self.expires = expires
@@ -66,8 +73,16 @@ class Match:
     def get_player(self, uuid: uuid.UUID) -> Player | None:
         return self._players.get(uuid)
 
-    def _add_player(self, uuid: uuid.UUID, join_token: str | None, client: tuple[str, int] | None):
-        player = Player(uuid, join_token, PlayerStatus.IN_MATCHMAKING_QUEUE, client)
+    def _add_player(self, uuid: uuid.UUID, name: str, join_token: str | None, client: tuple[str, int] | None):
+        player = Player(
+            player_id=uuid,
+            name=name,
+            join_token=join_token,
+            status=PlayerStatus.IN_MATCHMAKING_QUEUE,
+            addr=client,
+            # Assuming that _add_player is called on a non-empty queue only
+            position=Position(Facing.NEG_X)
+        )
         self._players[uuid] = player
 
     def _remove_player(self, uuid: uuid.UUID):
@@ -90,7 +105,7 @@ class Match:
         )
 
     def let_matchmake(self, player: Player):
-        if player.uuid not in self._players:
+        if player.player_id not in self._players:
             return  # a match can only modify its own players
 
         player.status = PlayerStatus.IN_MATCHMAKING_QUEUE
@@ -158,6 +173,7 @@ class MatchManager:
         self,
         match_id: str,
         player_id: uuid.UUID | str,
+        name: str,
         join_token: str | None,
         client: tuple[str, int] | None
     ) -> bool:
@@ -174,7 +190,7 @@ class MatchManager:
         if not match._is_accepting():
             return False
 
-        match._add_player(player_id, join_token, client)
+        match._add_player(player_id, name, join_token, client)
         return True
 
     def quit_player(self, player_id: uuid.UUID | str):

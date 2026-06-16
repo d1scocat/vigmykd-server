@@ -31,6 +31,22 @@ message PlayerMove {
 }
 
 
+message RequestMatchInfo {
+}
+
+message PlayerData {
+    string id = 1;
+    string name = 2;
+    Position position = 3;
+}
+
+message RequestMatchInfoResponse {
+    repeated PlayerData players = 1;
+    string your_id = 2;
+    uint64 rng_seed = 3;
+}
+
+
 
 message MatchmakingEnter {
     string match_id = 1;
@@ -61,6 +77,7 @@ message ServerToClientPacket {
         MatchmakingEnterResponse matchmaking_enter_response = 3;
         MatchmakingQuitResponse matchmaking_quit_response = 4;
         InformMatchStart inform_match_start = 5;
+        RequestMatchInfoResponse request_match_info_response = 6;
     }
 }
 
@@ -71,13 +88,19 @@ message ClientToServerPacket {
         PlayerMove player_action = 2;
         MatchmakingEnter matchmaking_enter = 3;
         MatchmakingQuit matchmaking_quit = 4;
+        RequestMatchInfo request_match_info = 5;
     }
 }
 
 message InternalCommunicationPacket {
+    message PlayerBrief {
+        string id = 1;
+        string name = 2;
+    }
+
     message RegisterMatch {
         string match_id = 1;
-        repeated string players = 2;
+        repeated PlayerBrief players = 2;
         string match_key = 3;
         string join_token = 4;
         uint64 expires = 5;

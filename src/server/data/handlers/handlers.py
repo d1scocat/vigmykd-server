@@ -53,7 +53,7 @@ class Handlers:
             if not player:
                 raise ActionFailed
 
-            logger.debug(f"Player {player.uuid!r} claimed address {client!r}")
+            logger.debug(f"Player {player.player_id!r} claimed address {client!r}")
             player.claim_address(client)
             match.let_matchmake(player)
 
@@ -81,11 +81,11 @@ class Handlers:
             if not player:
                 raise ActionFailed
 
-            match = ctx.match_manager.find_player_match(player.uuid)
+            match = ctx.match_manager.find_player_match(player.player_id)
             if not match:
                 raise ActionFailed
 
-            ctx.match_manager.quit_player(player.uuid)  # can fail silently for idempotency
+            ctx.match_manager.quit_player(player.player_id)  # can fail silently for idempotency
 
             packet = Packets.envelope(Packets.matchmaking_enter_response(match.match_id))
             await io_handler.enqueue_single_out(packet, client)
@@ -97,6 +97,30 @@ class Handlers:
             return
 
     @staticmethod
+    async def request_match_info(
+        payload: packet_pb2.RequestMatchInfo,
+        client: UDPAddress,
+        ctx: ServerContext,
+        io_handler: 'server.data.all_handler.SocketIOHandler',
+        msg_id: int,
+    ):
+        player = ctx.match_manager.find_player_by_addr(client)
+        if not player:
+            return
+
+        match = ctx.match_manager.find_player_match(player.player_id)
+        if not match:
+            return
+
+        packet = Packets.envelope(Packets.request_match_info_response(
+            list(match.players.values()),
+            str(player.player_id),
+            match.seed)
+        )
+
+        await io_handler.enqueue_single_out(packet, client)
+
+    @staticmethod
     async def icp_register_match(
         payload: packet_pb2.InternalCommunicationPacket.RegisterMatch,
         client: UDPAddress,
@@ -106,7 +130,11 @@ class Handlers:
     ):
         match_id: str = payload.match_id
         match_key: str = payload.match_key
-        player_id: str = list(payload.players)[0]
+
+        player: packet_pb2.InternalCommunicationPacket.PlayerBrief = list(payload.players)[0]
+        player_id = player.id
+        player_name = player.name
+
         join_token: str = payload.join_token  # for players[0]
         expires: int = payload.expires
 
@@ -125,7 +153,13 @@ class Handlers:
 
             if not joined_existing:
                 for match in ctx.match_manager.find_queuing_matches():
-                    if ctx.match_manager.add_player(match.match_id, player_id, join_token, None):
+                    if ctx.match_manager.add_player(
+                        match.match_id,
+                        player_id,
+                        player_name,
+                        join_token,
+                        None
+                    ):
                         # to send a RegisterMatchResponse with the correct ID
                         joined_match_id = match.match_id
                         joined_existing = True
@@ -133,7 +167,7 @@ class Handlers:
 
             if not joined_existing:
                 # don't set client, let `MatchmakingEnter` do that
-                match = Match(match_id, match_key, (player_id, join_token, None), expires)
+                match = Match(match_id, match_key, (player_id, player_name, join_token, None), expires)
                 ctx.match_manager.register_match(match)
         except Exception:
             logger.warning("Could not create match", exc_info=True)
@@ -159,6 +193,7 @@ handlers: Dict[str, Dict[str, DataHandler]] = {
         "player_action": Handlers.cts_player_action,
         "matchmaking_enter": Handlers.cts_matchmaking_enter,
         "matchmaking_quit": Handlers.cts_matchmaking_quit,
+        "request_match_info": Handlers.request_match_info,
     },
 
     "icp": {
