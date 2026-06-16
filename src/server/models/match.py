@@ -4,7 +4,6 @@ from enum import IntEnum
 from types import MappingProxyType
 from typing import Dict, Tuple
 
-from server.data.all_handler import SocketIOHandler
 from server.log import logger
 from server.models.player import Player, PlayerStatus
 
@@ -157,7 +156,11 @@ class MatchManager:
         match._add_player(player_id, join_token, client)
         return True
 
-    async def start_match(self, match_id: str, io_handler: SocketIOHandler):
+    async def start_match(
+        self,
+        match_id: str,
+        io_handler: 'server.data.all_handler.SocketIOHandler'
+    ):
         if match_id not in self._matches:
             return
 

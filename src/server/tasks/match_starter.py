@@ -15,7 +15,7 @@ class MatchStarter(Task):
         io_handler: SocketIOHandler,
     ):
         self.match_manager = match_manager
-        self.io_handler = SocketIOHandler
+        self.io_handler = io_handler
 
         self._shutdown_event = asyncio.Event()
         self._task: asyncio.Task | None = None
@@ -53,4 +53,4 @@ class MatchStarter(Task):
 
             if match.status == MatchStatus.ACCEPTING_PLAYERS:
                 if len(match.players) >= match.max_players:
-                    self.match_manager.start_match(match_id, self.io_handler)
+                    await self.match_manager.start_match(match_id, self.io_handler)
