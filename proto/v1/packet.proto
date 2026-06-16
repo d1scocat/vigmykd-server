@@ -35,7 +35,7 @@ message RequestMatchInfo {
 }
 
 message PlayerData {
-    string id = 1;
+    string uuid = 1;
     string name = 2;
     Position position = 3;
 }

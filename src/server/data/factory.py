@@ -80,7 +80,7 @@ class Packets:
         packet_players = []
         for player in players:
             data = packet_pb2.PlayerData()
-            data.id = player.player_id
+            data.uuid = str(player.player_id)
             data.name = player.name
             data.position.x = player.position.x
             data.position.y = player.position.y
