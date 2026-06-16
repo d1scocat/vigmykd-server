@@ -46,12 +46,11 @@ class MatchStarter(Task):
                 continue
 
     async def do_once(self):
-        # todo: debug and check whether things actually happen
         for match_id, match in self.match_manager.matches.items():
             if time.time() >= match.expires:
                 self.match_manager.drop_match(match_id)
                 continue
 
             if match.status == MatchStatus.ACCEPTING_PLAYERS:
-                if len(match.players) >= match.max_players:
+                if len(match.players) >= match.max_players and match.are_players_addressed:
                     await self.match_manager.start_match(match_id, self.io_handler)

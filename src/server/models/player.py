@@ -21,7 +21,7 @@ class Player:
     uuid: UUID
     join_token: str | None
     status: PlayerStatus
-    addr: Tuple[str, int]
+    addr: Tuple[str, int] | None
 
     def claim_address(self, address: Tuple[str, int]):
         self.addr = address
@@ -31,9 +31,13 @@ class Player:
         match: 'server.models.match.Match',
         io_handler: 'server.data.all_handler.SocketIOHandler'
     ):
+        if not self.addr:
+            logger.warning("Cannot inform player %r of start because they have no address",
+                           self.uuid)
+            return
+
         packet = Packets.inform_match_start()
         msg_id = packet.msg_id
         data = Packets.envelope(packet)
-        logger.info("Sending packet 'inform_match_start' to %r", self.addr)
 
         await io_handler.enqueue_single_out(data, self.addr, True, msg_id)

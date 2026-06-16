@@ -57,13 +57,17 @@ class Match:
     def players(self):
         return MappingProxyType(self._players)
 
+    @property
+    def are_players_addressed(self):
+        return all(player.addr is not None for player in self._players.values())
+
     def start_accepting(self):
         self.status = MatchStatus.ACCEPTING_PLAYERS
 
     def get_player(self, uuid: uuid.UUID) -> Player | None:
         return self._players.get(uuid)
 
-    def _add_player(self, uuid: uuid.UUID, join_token: str | None, client: Tuple[str, int]):
+    def _add_player(self, uuid: uuid.UUID, join_token: str | None, client: Tuple[str, int] | None):
         player = Player(uuid, join_token, PlayerStatus.IN_MATCHMAKING_QUEUE, client)
         self._players[uuid] = player
 
@@ -138,7 +142,7 @@ class MatchManager:
         match_id: str,
         player_id: uuid.UUID | str,
         join_token: str | None,
-        client: Tuple[str, int]
+        client: Tuple[str, int] | None
     ) -> bool:
         if isinstance(player_id, str):
             try:
