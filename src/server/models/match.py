@@ -274,7 +274,10 @@ class MatchManager:
             await player.inform_game_start(io_handler)
 
     def simulate_and_share(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
-        for match in self._matches.values():
+        logger.info(f"[SERVER] TICK LOOP | Active matches in dict: {len(self._matches)}")
+
+        for match_id, match in self._matches.items():
+            logger.info(f"[SERVER] SIMULATING MATCH | ID: {match_id}")
             match.simulate(tick)
 
             for player in match.players.values():
