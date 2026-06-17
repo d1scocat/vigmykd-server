@@ -2,6 +2,7 @@ import asyncio
 
 from server.context import ServerContext
 from server.data.all_handler import SocketIOHandler
+from server.log import logger
 from server.settings import config
 
 
@@ -35,14 +36,18 @@ class Server:
         while True:
             start = loop.time()
 
-            self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
-            # switch to this vvv   if ^^^ ever gets too slow:
-            # await loop.run_in_executor(
-            #     None,
-            #     self.ctx.match_manager.simulate_and_share,
-            #     self.ctx.tick,
-            #     self.io_handler
-            # )
+            try:
+                self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
+                # switch to this vvv   if ^^^ ever gets too slow:
+                # await loop.run_in_executor(
+                #     None,
+                #     self.ctx.match_manager.simulate_and_share,
+                #     self.ctx.tick,
+                #     self.io_handler
+                # )
+            except Exception:
+                logger.exception("TPS worker failure")
+                continue
 
             self.ctx.advance_simul()
             elapsed = loop.time() - start

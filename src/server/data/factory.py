@@ -164,9 +164,9 @@ class Packets:
             pos_data.y = player.position.y
             pos_data.vel_x = player.position.vel_x
             pos_data.vel_y = player.position.vel_y
-            pos_data.is_grounded = player.position.jumping
-            pos_data.ducking = player.position.ducking
-            pos_data.dashing = player.position.dashing
+            pos_data.is_grounded = player.position.is_grounded
+            pos_data.is_ducking = player.position.ducking
+            pos_data.is_dashing = player.position.dashing
 
             packet_players.append(pos_data)
 
