@@ -11,4 +11,7 @@ class ServerContext:
     ):
         self.sock = sock
         self.match_manager = match_manager
+        self.tick = 0
 
+    def advance_simul(self):
+        self.tick += 1

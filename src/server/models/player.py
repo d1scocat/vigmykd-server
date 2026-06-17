@@ -27,7 +27,24 @@ class Position:
     x: float = 0
     y: float = 0
     vel_x: float = 0
-    vel_dy: float = 0
+    vel_y: float = 0
+    is_grounded: bool = False
+    ducking: bool = False
+    dashing: bool = False
+
+
+@dataclass
+class PlayerInput:
+    move_dir: int = 0
+    duck: bool = False
+    jump: bool = False
+    dash: bool = False
+
+
+@dataclass
+class PlayerPhysics:
+    dash_timer: int = 0
+    has_cut_jump = True
 
 
 @dataclass
@@ -38,13 +55,15 @@ class Player:
     status: PlayerStatus
     addr: Tuple[str, int] | None
     position: Position
+    physics: PlayerPhysics = PlayerPhysics()
+
+    last_client_tick: int = 0
 
     def claim_address(self, address: Tuple[str, int]):
         self.addr = address
 
     async def inform_game_start(
         self,
-        match: 'server.models.match.Match',
         io_handler: 'server.data.all_handler.SocketIOHandler'
     ):
         if not self.addr:

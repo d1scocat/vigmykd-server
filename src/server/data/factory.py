@@ -64,6 +64,7 @@ class Packets:
         players: list['server.models.player.Player'],
         your_id: str,
         rng_seed: int,
+        server_tick: int,
         msg_id: int | None = None
     ):
         """`envelope()` a packet before sending!"""
@@ -76,6 +77,7 @@ class Packets:
         packet.msg_id = msg_id
         packet.server_to_client.request_match_info_response.your_id = your_id
         packet.server_to_client.request_match_info_response.rng_seed = rng_seed
+        packet.server_to_client.request_match_info_response.initial_server_tick = server_tick
 
         packet_players = []
         for player in players:
@@ -124,6 +126,51 @@ class Packets:
         packet = packet_pb2.Packet()
         packet.msg_id = msg_id
         packet.server_to_client.inform_match_start.SetInParent()
+
+        return packet
+
+    @staticmethod
+    def reconcile(
+        server_tick: int,
+        last_client_tick: int,
+        players: list['server.models.player.Player'],
+        msg_id: int | None = None
+    ):
+        """`envelope()` a packet before sending!"""
+        from server.models.player import Facing
+
+        if msg_id is None:
+            msg_id = Packets.get_next_id()
+
+        packet = packet_pb2.Packet()
+        packet.msg_id = msg_id
+
+        packet.server_to_client.reconcile.server_tick = server_tick
+        packet.server_to_client.reconcile.last_client_tick = last_client_tick
+
+        packet_players = []
+
+        for player in players:
+            pos_data = packet_pb2.PositionData()
+
+            pos_data.uuid = str(player.player_id)
+            pos_data.facing = (
+                packet_pb2.Facing.FACING_NEG_X
+                if player.position.facing == Facing.NEG_X
+                else packet_pb2.Facing.FACING_POS_X
+            )
+
+            pos_data.x = player.position.x
+            pos_data.y = player.position.y
+            pos_data.vel_x = player.position.vel_x
+            pos_data.vel_y = player.position.vel_y
+            pos_data.is_grounded = player.position.jumping
+            pos_data.ducking = player.position.ducking
+            pos_data.dashing = player.position.dashing
+
+            packet_players.append(pos_data)
+
+        packet.server_to_client.reconcile.players.extend(packet_players)
 
         return packet
 

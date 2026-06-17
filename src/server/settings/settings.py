@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 
-class Settings(BaseSettings):
+class EnvSettings(BaseSettings):
     port: int = Field(...)
     queue_size: int = Field(...)
     signature: str = Field(...)
@@ -13,4 +13,23 @@ class Settings(BaseSettings):
     packet_size: int = Field(...)
     keep_processed: int = Field(...)
 
+    tps: int = Field(...)
+
     model_config = SettingsConfigDict(env_prefix="vigmykd_")
+
+
+class PhysicsSettings(BaseSettings):
+    move_speed: float = Field(...)
+    friction: float = Field(...)
+    friction_low_threshold: float = Field(...)
+    gravity_rise: float = Field(...)
+    gravity_fall: float = Field(...)
+    jump_cut_scalar: float = Field(...)
+    terminal_velocity: float = Field(...)
+    jump_force: float = Field(...)
+    dash_speed: float = Field(...)
+    dash_duration_ticks: int = Field(...)
+    accel_x: float = Field(...)
+    decel_x: float = Field(...)
+
+    model_config = SettingsConfigDict(env_prefix="phys_")

@@ -2,11 +2,16 @@ import uuid
 import random
 import secrets
 
+from collections import deque
 from enum import IntEnum
 from types import MappingProxyType
 
+from server.data.factory import Packets
 from server.log import logger
-from server.models.player import Facing, Position, Player, PlayerStatus
+from server.models.player import Facing, Position, Player, PlayerStatus, PlayerInput
+from server.systems.move_system import MoveSystem
+
+import server.generated.v1.packet_pb2 as packet_pb2
 
 
 class MatchStatus(IntEnum):
@@ -59,6 +64,10 @@ class Match:
         self.status = status
         self.max_players = max_players
 
+        self.move_system = MoveSystem()
+
+        self.input_queues: dict[uuid.UUID, deque] = {}
+
     @property
     def players(self):
         return MappingProxyType(self._players)
@@ -110,6 +119,49 @@ class Match:
 
         player.status = PlayerStatus.IN_MATCHMAKING_QUEUE
         player.join_token = None
+
+    def queue_input(
+        self,
+        player: Player,
+        client_tick: int,
+        server_tick: int,
+        payload: packet_pb2.PlayerMoveState
+    ):
+        """Queues input for the upcoming server tick."""
+        if client_tick > player.last_client_tick:
+            player.last_client_tick = client_tick
+
+        player_input = PlayerInput(
+            move_dir=payload.move_dir,
+            duck=payload.duck,
+            jump=payload.jump,
+            dash=payload.dash
+        )
+
+        queue = self.input_queues.setdefault(player.player_id, deque())
+
+        # tick X+1 might arrive later than tick X
+        # gotta fucking love UDP
+        if queue and queue[-1][0] >= client_tick:
+            return
+        
+        queue.append((client_tick, player_input))
+
+    def simulate(self, tick: int):
+        # you can use: self.move_system.act_on(*args, **kwargs) - not yet defined
+        for player in self.players.values():
+            queue = self.input_queues.get(player.player_id)
+            final_input = None
+
+            if queue:
+                # get oldest input!
+                _, final_input = queue[-1]
+                queue.clear()
+
+            if final_input is None:
+                final_input = PlayerInput()
+
+            self.move_system.act_on(player, final_input)
 
 
 class MatchManager:
@@ -218,4 +270,18 @@ class MatchManager:
         match.status = MatchStatus.IN_GAME
         for player in match._players.values():
             player.status = PlayerStatus.ENTERING_GAME
-            await player.inform_game_start(match, io_handler)
+            await player.inform_game_start(io_handler)
+
+    def simulate_and_share(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
+        for match in self._matches.values():
+            match.simulate(tick)
+
+            for player in match.players.values():
+                response_data = Packets.reconcile(
+                    server_tick=tick,
+                    last_client_tick=player.last_client_tick,
+                    players=list(match.players.values())
+                )
+
+                io_handler.enqueue_single_out(Packets.envelope(response_data), player.addr)
+

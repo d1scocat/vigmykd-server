@@ -1,4 +1,4 @@
-from .settings import Settings
+from .settings import EnvSettings, PhysicsSettings
 
 from dotenv import load_dotenv
 
@@ -6,4 +6,5 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-config = Settings()
+config = EnvSettings()
+phys = PhysicsSettings()

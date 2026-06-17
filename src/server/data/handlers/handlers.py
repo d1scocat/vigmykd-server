@@ -20,16 +20,26 @@ class ActionFailed(Exception):
     pass
 
 
-class Handlers:
+class CTSHandlers:
     @staticmethod
-    async def cts_player_action(
-        payload: packet_pb2.PlayerMove,
+    async def cts_player_moved(
+        payload: packet_pb2.PlayerMoveState,
         client: UDPAddress,
         ctx: ServerContext,
         io_handler: 'server.data.all_handler.SocketIOHandler',
         msg_id: int,
     ):
-        ...
+        player = ctx.match_manager.find_player_by_addr(client)
+        if not player:
+            return
+
+        match = ctx.match_manager.find_player_match(player.player_id)
+        if not match:
+            return
+
+        client_tick: int = payload.client_tick
+        server_tick = ctx.tick
+        match.queue_input(player, client_tick, server_tick, payload)
 
     @staticmethod
     async def cts_matchmaking_enter(
@@ -97,7 +107,7 @@ class Handlers:
             return
 
     @staticmethod
-    async def request_match_info(
+    async def cts_request_match_info(
         payload: packet_pb2.RequestMatchInfo,
         client: UDPAddress,
         ctx: ServerContext,
@@ -115,11 +125,14 @@ class Handlers:
         packet = Packets.envelope(Packets.request_match_info_response(
             list(match.players.values()),
             str(player.player_id),
-            match.seed)
-        )
+            match.seed,
+            ctx.tick
+        ))
 
         await io_handler.enqueue_single_out(packet, client)
 
+
+class ICPHandlers:
     @staticmethod
     async def icp_register_match(
         payload: packet_pb2.InternalCommunicationPacket.RegisterMatch,
@@ -190,13 +203,13 @@ class Handlers:
 
 handlers: Dict[str, Dict[str, DataHandler]] = {
     "cts": {
-        "player_action": Handlers.cts_player_action,
-        "matchmaking_enter": Handlers.cts_matchmaking_enter,
-        "matchmaking_quit": Handlers.cts_matchmaking_quit,
-        "request_match_info": Handlers.request_match_info,
+        "player_move_state": CTSHandlers.cts_player_moved,
+        "matchmaking_enter": CTSHandlers.cts_matchmaking_enter,
+        "matchmaking_quit": CTSHandlers.cts_matchmaking_quit,
+        "request_match_info": CTSHandlers.cts_request_match_info,
     },
 
     "icp": {
-        "register_match": Handlers.icp_register_match,
+        "register_match": ICPHandlers.icp_register_match,
     }
 }

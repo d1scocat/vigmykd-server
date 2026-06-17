@@ -22,12 +22,13 @@ message Position {
 
 
 
-message PlayerMove {
-    enum Type {
-        TYPE_JUMP = 0;
-    }
+message PlayerMoveState {
+    uint32 client_tick = 1;
 
-    Type type = 1;
+    uint32 move_dir = 2;
+    bool duck = 3;
+    bool jump = 4;
+    bool dash = 5;
 }
 
 
@@ -40,10 +41,29 @@ message PlayerData {
     Position position = 3;
 }
 
+message PositionData {
+    string uuid = 1;
+    Facing facing = 2;
+    float x = 3;
+    float vel_x = 4;
+    float y = 5;
+    float vel_y = 6;
+    bool is_grounded = 7;
+    bool is_dashing = 8;
+    bool is_ducking = 9;
+}
+
 message RequestMatchInfoResponse {
     repeated PlayerData players = 1;
     string your_id = 2;
     uint64 rng_seed = 3;
+    uint32 initial_server_tick = 4;
+}
+
+message Reconcile {
+    repeated PositionData players = 1;
+    uint32 server_tick = 2;
+    uint32 last_client_tick = 3;
 }
 
 
@@ -78,6 +98,7 @@ message ServerToClientPacket {
         MatchmakingQuitResponse matchmaking_quit_response = 4;
         InformMatchStart inform_match_start = 5;
         RequestMatchInfoResponse request_match_info_response = 6;
+        Reconcile reconcile = 7;
     }
 }
 
@@ -85,7 +106,7 @@ message ClientToServerPacket {
     oneof payload {
         Ack ack = 1;
 
-        PlayerMove player_action = 2;
+        PlayerMoveState player_move_state = 2;
         MatchmakingEnter matchmaking_enter = 3;
         MatchmakingQuit matchmaking_quit = 4;
         RequestMatchInfo request_match_info = 5;
