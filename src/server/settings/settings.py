@@ -20,8 +20,6 @@ class EnvSettings(BaseSettings):
 
 class PhysicsSettings(BaseSettings):
     move_speed: float = Field(...)
-    friction: float = Field(...)
-    friction_low_threshold: float = Field(...)
     gravity_rise: float = Field(...)
     gravity_fall: float = Field(...)
     jump_cut_scalar: float = Field(...)
