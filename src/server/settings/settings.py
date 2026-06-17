@@ -30,4 +30,4 @@ class PhysicsSettings(BaseSettings):
     accel_x: float = Field(...)
     decel_x: float = Field(...)
 
-    model_config = SettingsConfigDict(env_prefix="phys_")
+    model_config = SettingsConfigDict(env_prefix="movement_")
