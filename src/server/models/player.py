@@ -1,6 +1,6 @@
 from server.data.factory import Packets
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
 from uuid import UUID
 from typing import Tuple
@@ -55,7 +55,7 @@ class Player:
     status: PlayerStatus
     addr: Tuple[str, int] | None
     position: Position
-    physics: PlayerPhysics = PlayerPhysics()
+    physics: PlayerPhysics = field(default_factory=PlayerPhysics)
 
     last_client_tick: int = 0
 
