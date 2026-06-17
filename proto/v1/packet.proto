@@ -25,7 +25,7 @@ message Position {
 message PlayerMoveState {
     uint32 client_tick = 1;
 
-    uint32 move_dir = 2;
+    int32 move_dir = 2;
     bool duck = 3;
     bool jump = 4;
     bool dash = 5;
