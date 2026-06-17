@@ -277,10 +277,16 @@ class MatchManager:
         logger.info(f"[SERVER] TICK LOOP | Active matches in dict: {len(self._matches)}")
 
         for match_id, match in self._matches.items():
-            logger.info(f"[SERVER] SIMULATING MATCH | ID: {match_id}")
+            logger.info(f"[SERVER] PREPARING TO SIMULATE MATCH | ID: {match_id} | Player count: {len(match.players)} | Status: {match.status.name}")
+            if match.status != MatchStatus.IN_GAME:
+                continue
+
+            logger.info(f"[SERVER] SIMULATING MATCH | ID: {match_id} | Player count: {len(match.players)}")
             match.simulate(tick)
 
             for player in match.players.values():
+                logger.info(f"[SERVER] SIMULATING MATCH {match_id} FOR PLAYER {player.player_id!r}")
+
                 response_data = Packets.reconcile(
                     server_tick=tick,
                     last_client_tick=player.last_client_tick,
