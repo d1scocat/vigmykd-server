@@ -161,7 +161,6 @@ class Match:
             if final_input is None:
                 final_input = PlayerInput()
 
-            logger.info(f"[SERVER] SIMULATE | Tick: {tick} | Player: {str(player.player_id)[:8]} | Input: {final_input.move_dir}")
             self.move_system.act_on(player, final_input)
 
 
@@ -274,25 +273,21 @@ class MatchManager:
             await player.inform_game_start(io_handler)
 
     def simulate_and_share(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
-        logger.info(f"[SERVER] TICK LOOP | Active matches in dict: {len(self._matches)}")
-
         for match_id, match in self._matches.items():
-            logger.info(f"[SERVER] PREPARING TO SIMULATE MATCH | ID: {match_id} | Player count: {len(match.players)} | Status: {match.status.name}")
             if match.status != MatchStatus.IN_GAME:
                 continue
 
-            logger.info(f"[SERVER] SIMULATING MATCH | ID: {match_id} | Player count: {len(match.players)}")
             match.simulate(tick)
 
             for player in match.players.values():
-                logger.info(f"[SERVER] SIMULATING MATCH {match_id} FOR PLAYER {player.player_id!r}")
-
                 response_data = Packets.reconcile(
                     server_tick=tick,
                     last_client_tick=player.last_client_tick,
                     players=list(match.players.values())
                 )
 
-                logger.info(f"[SERVER] SEND RECONCILE | SrvTick: {tick} | LastCliTick: {player.last_client_tick} | To: {player.addr}")
-                io_handler.enqueue_single_out(Packets.envelope(response_data), player.addr)
+                envelope = Packets.envelope(response_data)
+                logger.info(f"[NET] ENQUEUE RECONCILE | Size: {len(envelope.SerializeToString())} bytes | To: {player.addr}")
+
+                io_handler.enqueue_single_out(envelope, player.addr)
 

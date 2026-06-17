@@ -40,7 +40,6 @@ class CTSHandlers:
         client_tick: int = payload.client_tick
         server_tick = ctx.tick
 
-        logger.info(f"[SERVER] RECV UDP | CliTick: {client_tick} | Dir: {payload.move_dir}")
         match.queue_input(player, client_tick, server_tick, payload)
 
     @staticmethod
@@ -65,7 +64,7 @@ class CTSHandlers:
             if not player:
                 raise ActionFailed
 
-            logger.debug(f"Player {player.player_id!r} claimed address {client!r}")
+            logger.info(f"Player {player.player_id!r} claimed address {client!r}")
             player.claim_address(client)
             match.let_matchmake(player)
 
