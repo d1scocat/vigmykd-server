@@ -272,7 +272,7 @@ class MatchManager:
             player.status = PlayerStatus.ENTERING_GAME
             await player.inform_game_start(io_handler)
 
-    def simulate_and_share(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
+    async def simulate_and_share(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
         for match_id, match in self._matches.items():
             if match.status != MatchStatus.IN_GAME:
                 continue
@@ -289,5 +289,5 @@ class MatchManager:
                 envelope = Packets.envelope(response_data)
                 logger.info(f"[NET] ENQUEUE RECONCILE | Size: {len(envelope.SerializeToString())} bytes | To: {player.addr}")
 
-                io_handler.enqueue_single_out(envelope, player.addr)
+                await io_handler.enqueue_single_out(envelope, player.addr)
 

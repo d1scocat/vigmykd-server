@@ -37,14 +37,7 @@ class Server:
             start = loop.time()
 
             try:
-                self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
-                # switch to this vvv   if ^^^ ever gets too slow:
-                # await loop.run_in_executor(
-                #     None,
-                #     self.ctx.match_manager.simulate_and_share,
-                #     self.ctx.tick,
-                #     self.io_handler
-                # )
+                await self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
             except Exception:
                 logger.exception("TPS worker failure")
                 continue
