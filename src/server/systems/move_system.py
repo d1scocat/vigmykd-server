@@ -78,7 +78,7 @@ class MoveSystem(System[Player]):
         sub.position.y += sub.position.vel_y
 
         # === === === collision, ground === === ===
-        floor_y = 1000.0  # (stub!)
+        floor_y = 400.0  # (stub!)
         if sub.position.y >= floor_y:
             sub.position.y = floor_y
             sub.position.vel_y = 0.0
