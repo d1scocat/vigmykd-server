@@ -39,6 +39,8 @@ class CTSHandlers:
 
         client_tick: int = payload.client_tick
         server_tick = ctx.tick
+
+        logger.info(f"[SERVER] RECV UDP | CliTick: {client_tick} | Dir: {payload.move_dir}")
         match.queue_input(player, client_tick, server_tick, payload)
 
     @staticmethod

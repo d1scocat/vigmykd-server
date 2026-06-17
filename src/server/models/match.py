@@ -161,6 +161,7 @@ class Match:
             if final_input is None:
                 final_input = PlayerInput()
 
+            logger.info(f"[SERVER] SIMULATE | Tick: {tick} | Player: {str(player.player_id)[:8]} | Input: {final_input.move_dir}")
             self.move_system.act_on(player, final_input)
 
 
@@ -283,5 +284,6 @@ class MatchManager:
                     players=list(match.players.values())
                 )
 
+                logger.info(f"[SERVER] SEND RECONCILE | SrvTick: {tick} | LastCliTick: {player.last_client_tick} | To: {player.addr}")
                 io_handler.enqueue_single_out(Packets.envelope(response_data), player.addr)
 
