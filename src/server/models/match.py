@@ -287,7 +287,6 @@ class MatchManager:
                 )
 
                 envelope = Packets.envelope(response_data)
-                logger.info(f"[NET] ENQUEUE RECONCILE | Size: {len(envelope.SerializeToString())} bytes | To: {player.addr}")
 
                 await io_handler.enqueue_single_out(envelope, player.addr)
 

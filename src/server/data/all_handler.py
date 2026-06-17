@@ -119,9 +119,7 @@ class SocketIOHandler:
         ack_id = msg.msg_id
 
         try:
-            logger.info(f"[NET] PHYSICALLY SENDING {len(data)} bytes to {client}")
             await self.loop.sock_sendto(self.ctx.sock, data, client)
-            logger.info(f"[NET] PHYSICALLY SENT {len(data)} bytes to {client}")
         except Exception:
             logger.warning("Failed to send a packet", exc_info=True)
         else:
