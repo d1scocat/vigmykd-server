@@ -55,6 +55,7 @@ class Player:
     status: PlayerStatus
     addr: Tuple[str, int] | None
     position: Position
+    last_input: PlayerInput | None = None
     physics: PlayerPhysics = field(default_factory=PlayerPhysics)
 
     last_client_tick: int = 0

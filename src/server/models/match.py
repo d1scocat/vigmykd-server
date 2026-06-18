@@ -154,9 +154,10 @@ class Match:
 
             if queue:
                 _, final_input = queue.popleft()
+                player.last_input = final_input
 
             if final_input is None:
-                final_input = PlayerInput()
+                final_input = player.last_input or PlayerInput()
 
             self.move_system.act_on(player, final_input)
 
