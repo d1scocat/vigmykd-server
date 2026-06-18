@@ -29,5 +29,10 @@ class PhysicsSettings(BaseSettings):
     dash_duration_ticks: int = Field(...)
     accel_x: float = Field(...)
     decel_x: float = Field(...)
+    dash_plunge_speed: float = Field(...)
+    max_jump_force: float = Field(...)
+    air_move_speed: float = Field(...)
+    air_accel_x: float = Field(...)
+    air_decel_x: float = Field(...)
 
     model_config = SettingsConfigDict(env_prefix="movement_")

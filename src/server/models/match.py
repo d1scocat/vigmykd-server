@@ -143,10 +143,8 @@ class Match:
         # tick X+1 might arrive later than tick X
         # gotta fucking love UDP
         if queue and queue[-1][0] >= client_tick:
-            logger.info(f"[SERVER RECV] Tried to adppend QueueInput {(client_tick, player_input)!r} to queue of length {len(queue)} for player {str(player.player_id)[:4]}, but the latest queue item {queue[-1][0]} is beyond the suggested client tick {client_tick} | Queue: {queue!r}")
             return
 
-        logger.info(f"[SERVER RECV] QueueInput - appending {(client_tick, player_input)!r} to queue of length {len(queue)} for player {str(player.player_id)[:4]} | Queue: {queue!r}")
         queue.append((client_tick, player_input))
 
     def simulate(self, tick: int):
@@ -158,10 +156,8 @@ class Match:
                 client_tick, final_input = queue.popleft()
                 player.last_input = final_input
                 player.last_client_tick = client_tick
-                logger.info(f"[SERVER SIMU] Server Tick: {tick} | Player: {str(player.player_id)[:4]} | Got item {(client_tick, final_input)!r} from queue. It's now empty")
             else:
                 final_input = player.last_input or PlayerInput()
-                logger.info(f"[SERVER MISS] Server Tick: {tick} | Player: {str(player.player_id)[:4]} | Queue empty! Using last_input (Client Tick: {player.last_client_tick})")
 
             self.move_system.act_on(player, final_input)
 
