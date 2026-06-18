@@ -90,7 +90,7 @@ class Match:
             status=PlayerStatus.IN_MATCHMAKING_QUEUE,
             addr=client,
             # Assuming that _add_player is called on a non-empty queue only
-            position=Position(Facing.NEG_X)
+            position=Position(Facing.POS_X)
         )
         self._players[uuid] = player
 
