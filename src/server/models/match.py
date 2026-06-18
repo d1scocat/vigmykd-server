@@ -143,15 +143,15 @@ class Match:
         # tick X+1 might arrive later than tick X
         # gotta fucking love UDP
         if queue and queue[-1][0] >= client_tick:
-            logger.info(f"[SERVER RECV] Tried to adppend QueueInput {(client_tick, player_input)!r} to queue of length {len(queue)} for player {str(player.player_id)[:4]}, but the latest queue item {queue[-1][0]} is beyond the suggested client tick {client_tick}")
+            logger.info(f"[SERVER RECV] Tried to adppend QueueInput {(client_tick, player_input)!r} to queue of length {len(queue)} for player {str(player.player_id)[:4]}, but the latest queue item {queue[-1][0]} is beyond the suggested client tick {client_tick} | Queue: {queue!r}")
             return
 
-        logger.info(f"[SERVER RECV] QueueInput - appending {(client_tick, player_input)!r} to queue of length {len(queue)} for player {str(player.player_id)[:4]}")
+        logger.info(f"[SERVER RECV] QueueInput - appending {(client_tick, player_input)!r} to queue of length {len(queue)} for player {str(player.player_id)[:4]} | Queue: {queue!r}")
         queue.append((client_tick, player_input))
 
     def simulate(self, tick: int):
         for player in self.players.values():
-            queue = self.input_queues.setdefault(player.player_id, deque())
+            queue = self.input_queues.get(player.player_id, None)
             final_input = None
 
             if queue:
