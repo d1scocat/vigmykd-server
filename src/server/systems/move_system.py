@@ -19,7 +19,6 @@ class MoveSystem(System[Player]):
             elif sub.position.is_grounded and player_input.move_dir == 0 and not player_input.duck:
                 sub.position.vel_y = phys.max_jump_force
                 sub.position.is_grounded = False
-                sub.physics.has_cut_jump = True
 
             # just dashing
             else:
@@ -67,21 +66,21 @@ class MoveSystem(System[Player]):
             else:
                 self._decelerate(sub, current_decel_x)
 
+        if not sub.position.is_grounded and not sub.position.dashing:
+            sub.position.vel_x *= phys.air_drag
+
         # === === === y movement: jump === === ===
         if player_input.jump and sub.position.is_grounded and not player_input.duck:
             sub.position.vel_y = phys.jump_force
             sub.position.is_grounded = False
-            sub.physics.has_cut_jump = False
 
         # === === === y movement: gravity === === ===
         if not sub.position.is_grounded:
-            # if let go while jumping, kill momentum! :)
-            if not player_input.jump and sub.position.vel_y < 0 and not sub.physics.has_cut_jump:
-                sub.position.vel_y *= phys.jump_cut_scalar
-                sub.physics.has_cut_jump = True
-
             if sub.position.vel_y < 0:
-                sub.position.vel_y += phys.gravity_rise
+                if not player_input.jump:
+                    sub.position.vel_y += phys.gravity_rise * phys.fast_fall_multiplier
+                else:
+                    sub.position.vel_y += phys.gravity_rise
             else:
                 sub.position.vel_y += phys.gravity_fall
 

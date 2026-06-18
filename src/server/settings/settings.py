@@ -22,7 +22,6 @@ class PhysicsSettings(BaseSettings):
     move_speed: float = Field(...)
     gravity_rise: float = Field(...)
     gravity_fall: float = Field(...)
-    jump_cut_scalar: float = Field(...)
     terminal_velocity: float = Field(...)
     jump_force: float = Field(...)
     dash_speed: float = Field(...)
@@ -34,5 +33,7 @@ class PhysicsSettings(BaseSettings):
     air_move_speed: float = Field(...)
     air_accel_x: float = Field(...)
     air_decel_x: float = Field(...)
+    fast_fall_multiplier: float = Field(...)
+    air_drag: float = Field(...)
 
     model_config = SettingsConfigDict(env_prefix="movement_")
