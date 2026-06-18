@@ -149,7 +149,7 @@ class Match:
 
     def simulate(self, tick: int):
         for player in self.players.values():
-            queue = self.input_queues.get(player.player_id)
+            queue = self.input_queues.setdefault(player.player_id, deque())
             final_input = None
 
             if queue:
