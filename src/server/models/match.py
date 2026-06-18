@@ -158,6 +158,7 @@ class Match:
                 client_tick, final_input = queue.popleft()
                 player.last_input = final_input
                 player.last_client_tick = client_tick
+                logger.info(f"[SERVER SIMU] Server Tick: {tick} | Player: {str(player.player_id)[:4]} | Got item {(client_tick, final_input)!r} from queue. It's now empty")
             else:
                 final_input = player.last_input or PlayerInput()
                 logger.info(f"[SERVER MISS] Server Tick: {tick} | Player: {str(player.player_id)[:4]} | Queue empty! Using last_input (Client Tick: {player.last_client_tick})")
