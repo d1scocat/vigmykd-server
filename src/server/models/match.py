@@ -128,8 +128,8 @@ class Match:
         payload: packet_pb2.PlayerMoveState
     ):
         """Queues input for the upcoming server tick."""
-        if client_tick > player.last_client_tick:
-            player.last_client_tick = client_tick
+        #if client_tick > player.last_client_tick:
+        #    player.last_client_tick = client_tick
 
         player_input = PlayerInput(
             move_dir=payload.move_dir,
@@ -153,10 +153,10 @@ class Match:
             final_input = None
 
             if queue:
-                _, final_input = queue.popleft()
+                client_tick, final_input = queue.popleft()
                 player.last_input = final_input
-
-            if final_input is None:
+                player.last_client_tick = client_tick
+            else:
                 final_input = player.last_input or PlayerInput()
 
             self.move_system.act_on(player, final_input)
@@ -271,7 +271,7 @@ class MatchManager:
             await player.inform_game_start(io_handler)
 
     async def simulate_and_share(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
-        for match_id, match in self._matches.items():
+        for _, match in self._matches.items():
             if match.status != MatchStatus.IN_GAME:
                 continue
 
@@ -287,4 +287,3 @@ class MatchManager:
                 envelope = Packets.envelope(response_data)
 
                 await io_handler.enqueue_single_out(envelope, player.addr)
-
