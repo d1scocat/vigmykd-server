@@ -1,4 +1,4 @@
-from server.models.player import Player, PlayerInput
+from server.models.player import Facing, Player, PlayerInput
 from server.settings import phys
 from server.systems import System
 
@@ -68,6 +68,12 @@ class MoveSystem(System[Player]):
 
         if not sub.position.is_grounded and not sub.position.dashing:
             sub.position.vel_x *= phys.air_drag
+
+        # update facing
+        if sub.position.vel_x > 0:
+            sub.position.facing = Facing.POS_X
+        elif sub.position.vel_x < 0:
+            sub.position.facing = Facing.NEG_X
 
         # === === === y movement: jump === === ===
         if player_input.jump and sub.position.is_grounded and not player_input.duck:
