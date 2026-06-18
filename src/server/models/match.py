@@ -148,15 +148,12 @@ class Match:
         queue.append((client_tick, player_input))
 
     def simulate(self, tick: int):
-        # you can use: self.move_system.act_on(*args, **kwargs) - not yet defined
         for player in self.players.values():
             queue = self.input_queues.get(player.player_id)
             final_input = None
 
             if queue:
-                # get oldest input!
-                _, final_input = queue[-1]
-                queue.clear()
+                _, final_input = queue.popleft()
 
             if final_input is None:
                 final_input = PlayerInput()
