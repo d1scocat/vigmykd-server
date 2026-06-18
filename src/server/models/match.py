@@ -158,6 +158,7 @@ class Match:
                 player.last_client_tick = client_tick
             else:
                 final_input = player.last_input or PlayerInput()
+                logger.info(f"[SERVER MISS] Server Tick: {tick} | Player: {str(player.player_id)[:4]} | Queue empty! Using last_input (Client Tick: {player.last_client_tick})")
 
             self.move_system.act_on(player, final_input)
 
