@@ -122,6 +122,8 @@ class CTSHandlers:
         match = ctx.match_manager.find_player_match(player.player_id)
         if not match:
             return
+        
+        logger.info("match.map_name is %s", match.map_name)
 
         packet = Packets.envelope(Packets.request_match_info_response(
             list(match.players.values()),
