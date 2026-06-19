@@ -39,6 +39,7 @@ class Match:
         founder: tuple[uuid.UUID | str, str, str, tuple[str, int] | None],
         expires: int,
         world: HeadlessWorld,
+        map_name: str,
         status: MatchStatus = MatchStatus.WAITING_FOR_INIT,
         max_players: int = 2
     ) -> None:
@@ -49,6 +50,7 @@ class Match:
         random.seed(self.seed)
 
         self.world = world
+        self.map_name = map_name
 
         uid, name, join_token, client = founder
         if isinstance(uid, str):
@@ -177,7 +179,7 @@ class MatchManager:
         self._worlds = loader.load_maps(skip_malformed=False)
 
     def random_map(self):
-        return random.choice(list(self._worlds.values()))
+        return random.choice(list(self._worlds.items()))
 
     @property
     def matches(self):

@@ -182,13 +182,14 @@ class ICPHandlers:
 
             if not joined_existing:
                 # don't set client, let `MatchmakingEnter` do that
-                world = ctx.match_manager.random_map()
+                name, world = ctx.match_manager.random_map()
                 match = Match(
                     match_id,
                     match_key,
                     (player_id, player_name, join_token, None),
                     expires,
-                    world
+                    world,
+                    name
                 )
                 ctx.match_manager.register_match(match)
         except Exception:
