@@ -42,7 +42,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"testmap.tsx"
+         "source":"..\/..\/..\/..\/vigmykd-tiles\/testmap.tsx"
         }],
  "tilewidth":64,
  "type":"map",
