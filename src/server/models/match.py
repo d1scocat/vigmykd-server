@@ -140,6 +140,8 @@ class Match:
         """Queues input for the upcoming server tick."""
         #if client_tick > player.last_client_tick:
         #    player.last_client_tick = client_tick
+        if client_tick <= player.last_client_tick:
+            return
 
         player_input = PlayerInput(
             move_dir=payload.move_dir,
