@@ -122,6 +122,10 @@ class HeadlessWorld:
                     if rect.colliderect(coll):
                         return coll
 
+                    if abs((rect.y + rect.height) - coll.y) < 0.01:  # epsilon
+                        if rect.x < coll.x + coll.width and rect.x + rect.width > coll.x:
+                            return coll
+
         return None
 
     def _build_collision_grid(self):
