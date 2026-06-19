@@ -13,9 +13,12 @@ class WorldSystem(System[Player]):
         coll_rect = world.get_collision(sub.rect)
 
         if coll_rect:
-            if sub.position.vel_x > 0:
+            overlap_left = (sub.position.x + player.hitbox_width) - coll_rect.left
+            overlap_right = coll_rect.right - sub.position.x
+
+            if abs(overlap_left) < abs(overlap_right):
                 sub.position.x = coll_rect.left - player.hitbox_width
-            elif sub.position.vel_x < 0:
+            else:
                 sub.position.x = coll_rect.right
 
             sub.position.vel_x = 0
@@ -23,12 +26,17 @@ class WorldSystem(System[Player]):
         # === === === y axis === === ==
         sub.position.y += sub.position.vel_y
         coll_rect = world.get_collision(sub.rect)
+
         if coll_rect:
-            if sub.position.vel_y > 0:
+            overlap_top = (sub.position.y + player.hitbox_height) - coll_rect.top
+            overlap_bottom = coll_rect.bottom - sub.position.y
+
+            if abs(overlap_top) < abs(overlap_bottom):
                 sub.position.y = coll_rect.top - player.hitbox_height
                 sub.position.is_grounded = True
-            elif sub.position.vel_y < 0:
+            else:
                 sub.position.y = coll_rect.bottom
+                sub.position.is_grounded = False
 
             sub.position.vel_y = 0
         else:
