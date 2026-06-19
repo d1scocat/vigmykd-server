@@ -158,6 +158,9 @@ class Match:
         queue.append((client_tick, player_input))
 
     def simulate(self, tick: int):
+        import time
+        start_time = time.perf_counter()
+
         for player in self.players.values():
             queue = self.input_queues.get(player.player_id, None)
             final_input = None
@@ -171,6 +174,10 @@ class Match:
 
             self.move_system.act_on(player, final_input)
             self.world_system.act_on(player, self.world)
+
+        ms = (time.perf_counter() - start_time) * 1000
+        if ms > 15:
+            logger.warning(f"[SERVER WARNING] Tick {tick} took {ms:.2f}ms! Server is falling behind.")
 
 
 class MatchManager:

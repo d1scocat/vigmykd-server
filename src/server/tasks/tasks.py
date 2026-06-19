@@ -29,12 +29,12 @@ class TaskManager:
             task_name = task.__class__.__name__
             try:
                 logger.info(f"⌚ {idx + 1}/{amount}. Task {task_name} "
-                            f"started in {await self.gettimeof(task.start):3f}ms")
+                            f"started in {await self.gettimeof(task.start):.3f}ms")
             except Exception:
                 logger.warning(f"⚠️ Failed to start task {task_name}")
                 raise
 
-        logger.info(f"✅ Started all {amount} tasks in {time.perf_counter() - start:3f}ms")
+        logger.info(f"✅ Started all {amount} tasks in {time.perf_counter() - start:.3f}ms")
 
     async def stop(self):
         start = time.perf_counter()
@@ -44,12 +44,12 @@ class TaskManager:
             task_name = task.__class__.__name__
             try:
                 logger.info(f"⌚ {idx}/{amount}. Task {task_name} "
-                            f"stopped in {await self.gettimeof(task.stop):3f}ms")
+                            f"stopped in {await self.gettimeof(task.stop):.3f}ms")
             except Exception:
                 logger.warning(f"⚠️ Failed to stop task {task_name}")
                 raise
 
-        logger.info(f"✅ Stopped all {amount} tasks in {time.perf_counter() - start:3f}ms")
+        logger.info(f"✅ Stopped all {amount} tasks in {time.perf_counter() - start:.3f}ms")
 
     async def gettimeof(self, callable: Callable[..., Awaitable[None]]) -> float:
         start = time.perf_counter()
