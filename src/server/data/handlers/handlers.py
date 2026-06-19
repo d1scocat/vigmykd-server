@@ -127,7 +127,8 @@ class CTSHandlers:
             list(match.players.values()),
             str(player.player_id),
             match.seed,
-            ctx.tick
+            ctx.tick,
+            match.map_name
         ))
 
         await io_handler.enqueue_single_out(packet, client)
@@ -181,7 +182,14 @@ class ICPHandlers:
 
             if not joined_existing:
                 # don't set client, let `MatchmakingEnter` do that
-                match = Match(match_id, match_key, (player_id, player_name, join_token, None), expires)
+                world = ctx.match_manager.random_map()
+                match = Match(
+                    match_id,
+                    match_key,
+                    (player_id, player_name, join_token, None),
+                    expires,
+                    world
+                )
                 ctx.match_manager.register_match(match)
         except Exception:
             logger.warning("Could not create match", exc_info=True)

@@ -65,6 +65,7 @@ class Packets:
         your_id: str,
         rng_seed: int,
         server_tick: int,
+        map_name: str,
         msg_id: int | None = None
     ):
         """`envelope()` a packet before sending!"""
@@ -78,6 +79,7 @@ class Packets:
         packet.server_to_client.request_match_info_response.your_id = your_id
         packet.server_to_client.request_match_info_response.rng_seed = rng_seed
         packet.server_to_client.request_match_info_response.initial_server_tick = server_tick
+        packet.server_to_client.request_match_info_response.map_name = map_name
 
         packet_players = []
         for player in players:

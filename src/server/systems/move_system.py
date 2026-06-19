@@ -93,19 +93,6 @@ class MoveSystem(System[Player]):
             if sub.position.vel_y > phys.terminal_velocity:
                 sub.position.vel_y = phys.terminal_velocity
 
-        # === === === pos update === === ===
-        sub.position.x += sub.position.vel_x
-        sub.position.y += sub.position.vel_y
-
-        # === === === collision, ground === === ===
-        floor_y = 400.0  # (stub!)
-        if sub.position.y >= floor_y:
-            sub.position.y = floor_y
-            sub.position.vel_y = 0.0
-            sub.position.is_grounded = True
-
-        # future: add collisions
-
     def _decelerate(self, sub: Player, current_decel_x: float):
         if sub.position.vel_x > 0:
             sub.position.vel_x -= current_decel_x

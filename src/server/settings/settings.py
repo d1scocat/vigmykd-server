@@ -37,3 +37,11 @@ class PhysicsSettings(BaseSettings):
     air_drag: float = Field(...)
 
     model_config = SettingsConfigDict(env_prefix="movement_")
+
+
+class PlayerSettings(BaseSettings):
+    hitbox_width: float = Field(...)
+    hitbox_height: float = Field(...)
+    hitbox_height_ducking: float = Field(...)
+
+    model_config = SettingsConfigDict(env_prefix="player_")

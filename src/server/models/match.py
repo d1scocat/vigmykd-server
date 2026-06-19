@@ -10,6 +10,9 @@ from server.data.factory import Packets
 from server.log import logger
 from server.models.player import Facing, Position, Player, PlayerStatus, PlayerInput
 from server.systems.move_system import MoveSystem
+from server.systems.world_system import WorldSystem
+from server.world import loader
+from server.world.headless import HeadlessWorld
 
 import server.generated.v1.packet_pb2 as packet_pb2
 
@@ -27,6 +30,7 @@ class Match:
     expires: int
     status: MatchStatus
     max_players: int
+    map_name: str
 
     def __init__(
         self,
@@ -34,6 +38,7 @@ class Match:
         match_key: str,
         founder: tuple[uuid.UUID | str, str, str, tuple[str, int] | None],
         expires: int,
+        world: HeadlessWorld,
         status: MatchStatus = MatchStatus.WAITING_FOR_INIT,
         max_players: int = 2
     ) -> None:
@@ -42,6 +47,8 @@ class Match:
 
         self.seed = secrets.randbits(64)
         random.seed(self.seed)
+
+        self.world = world
 
         uid, name, join_token, client = founder
         if isinstance(uid, str):
@@ -65,6 +72,7 @@ class Match:
         self.max_players = max_players
 
         self.move_system = MoveSystem()
+        self.world_system = WorldSystem()
 
         self.input_queues: dict[uuid.UUID, deque] = {}
 
@@ -160,11 +168,16 @@ class Match:
                 final_input = player.last_input or PlayerInput()
 
             self.move_system.act_on(player, final_input)
+            self.world_system.act_on(player, self.world)
 
 
 class MatchManager:
     def __init__(self) -> None:
         self._matches: dict[str, Match] = {}
+        self._worlds = loader.load_maps(skip_malformed=False)
+
+    def random_map(self):
+        return random.choice(list(self._worlds.values()))
 
     @property
     def matches(self):

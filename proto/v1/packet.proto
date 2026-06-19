@@ -58,6 +58,7 @@ message RequestMatchInfoResponse {
     string your_id = 2;
     uint64 rng_seed = 3;
     uint32 initial_server_tick = 4;
+    string map_name = 5;
 }
 
 message Reconcile {

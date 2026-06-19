@@ -1,0 +1,5 @@
+{
+    "name": "testmap",
+    "map_json": "testmap.tmj",
+    "tileset_json": "testmap.tsj"
+}
