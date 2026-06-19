@@ -179,7 +179,7 @@ class Match:
             self.world_system.act_on(player, self.world)
 
         ms = (time.perf_counter() - start_time) * 1000
-        if ms > 15:
+        if ms > 0.025:
             logger.warning(f"[SERVER WARNING] Tick {tick} took {ms:.2f}ms! Server is falling behind.")
 
 
