@@ -33,15 +33,22 @@ class Server:
 
     async def tps_worker(self, loop: asyncio.AbstractEventLoop):
         delta = self.tick_delta
+        accumul = 0.0
+        last = loop.time()
+
         while True:
-            start = loop.time()
+            now = loop.time()
+            accumul += (now - last)
+            last = now
 
-            try:
-                await self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
-            except Exception:
-                logger.exception("TPS worker failure")
-                continue
+            while accumul >= delta:
+                try:
+                    await self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
+                except Exception:
+                    logger.exception("TPS worker failure")
+                self.ctx.advance_simul()
+                accumul -= delta
 
-            self.ctx.advance_simul()
-            elapsed = loop.time() - start
-            await asyncio.sleep(max(0, delta - elapsed))
+            sleep = delta - accumul
+            if sleep > 0.0:
+                await asyncio.sleep(sleep)
