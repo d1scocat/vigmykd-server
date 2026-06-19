@@ -82,10 +82,10 @@ class MapData:
             )
 
         grid = []
-        data = first_layer_data["data"]
+        fl_data = first_layer_data["data"]
 
         for y in range(height):
-            grid.append(data[(y * width):((y+1)*width)])
+            grid.append(fl_data[(y * width):((y+1)*width)])
 
         return cls(
             width=width,

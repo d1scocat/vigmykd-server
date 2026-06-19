@@ -10,7 +10,7 @@ MAPS_PATH = Path.cwd() / "resources" / "maps"
 
 
 def load_map(name: str) -> HeadlessWorld | None:
-    world_dir = MAPS_PATH / "name"
+    world_dir = MAPS_PATH / name
     if not world_dir.is_dir():
         return None
 
@@ -20,7 +20,10 @@ def load_map(name: str) -> HeadlessWorld | None:
     
     try:
         mapdata = json.loads(mapdata_file.read_text())
-        return HeadlessWorld(tmj_path=mapdata["map_json"], tsj_path=mapdata["tileset_json"])
+        return HeadlessWorld(
+            tmj_path=(world_dir / mapdata["map_json"]),
+            tsj_path=(world_dir / mapdata["tileset_json"]),
+        )
     except Exception:
         logger.exception("Failed to load map %s", name)
         return None
