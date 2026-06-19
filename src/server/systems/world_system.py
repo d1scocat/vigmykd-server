@@ -6,14 +6,11 @@ from server.world.headless import HeadlessWorld
 
 class WorldSystem(System[Player]):
     def act_on(self, sub: Player, world: HeadlessWorld):
-        # === === === pos update === === ===
-        sub.position.x += sub.position.vel_x
-        sub.position.y += sub.position.vel_y
-
-        rect = sub.rect
+        # === === === collisions and pos update === === ===
 
         # === === === x axis === === ==
-        coll_rect = world.get_collision(rect)
+        sub.position.x += sub.position.vel_x
+        coll_rect = world.get_collision(sub.rect)
 
         if coll_rect:
             if sub.position.vel_x > 0:
@@ -24,6 +21,8 @@ class WorldSystem(System[Player]):
             sub.position.vel_x = 0
 
         # === === === y axis === === ==
+        sub.position.y += sub.position.vel_y
+        coll_rect = world.get_collision(sub.rect)
         if coll_rect:
             if sub.position.vel_y > 0:
                 sub.position.y = coll_rect.top - player.hitbox_height
@@ -32,3 +31,5 @@ class WorldSystem(System[Player]):
                 sub.position.y = coll_rect.bottom
 
             sub.position.vel_y = 0
+        else:
+            sub.position.is_grounded = False
