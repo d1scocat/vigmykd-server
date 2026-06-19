@@ -163,13 +163,16 @@ class Match:
 
         for player in self.players.values():
             queue = self.input_queues.get(player.player_id, None)
+            logger.info(f"[SERVER] {tick=}: Player {player.player_id} queue size: {len(queue) if queue else 0}")
             final_input = None
 
             if queue:
                 client_tick, final_input = queue.popleft()
+                logger.info(f"[SERVER] Processing input for client_tick {client_tick}")
                 player.last_input = final_input
                 player.last_client_tick = client_tick
             else:
+                logger.info(f"[SERVER] No input for player {player.player_id}, using last_input")
                 final_input = player.last_input or PlayerInput()
 
             self.move_system.act_on(player, final_input)
@@ -308,4 +311,5 @@ class MatchManager:
 
                 envelope = Packets.envelope(response_data)
 
+                logger.info(f"[SERVER] Sending Reconcile for tick {tick} to client {player.addr!r}")
                 await io_handler.enqueue_single_out(envelope, player.addr)
