@@ -35,12 +35,12 @@ def load_maps(skip_malformed: bool) -> dict[str, HeadlessWorld]:
     for name in MAPS_PATH.iterdir():
         if name.is_dir():
             logger.info("Loading map %s...", name)
-            
+
             world = load_map(name.name)
             if not skip_malformed and world is None:
                 raise ValueError(f"Could not load world {name}")
 
-            result[name] = world
+            result[name.name] = world
 
     logger.info("🏡 Loaded %d maps", len(result))
     return result
