@@ -43,5 +43,6 @@ class PlayerSettings(BaseSettings):
     hitbox_width: float = Field(...)
     hitbox_height: float = Field(...)
     hitbox_height_ducking: float = Field(...)
+    keepalive_ticks: int = Field(...)
 
     model_config = SettingsConfigDict(env_prefix="player_")

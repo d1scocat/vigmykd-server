@@ -60,6 +60,7 @@ class Player:
     physics: PlayerPhysics = field(default_factory=PlayerPhysics)
 
     last_client_tick: int = 0
+    keepalive_tick: int = 2**31
 
     @property
     def rect(self) -> Rect:
@@ -89,3 +90,9 @@ class Player:
         data = Packets.envelope(packet)
 
         await io_handler.enqueue_single_out(data, self.addr, True, msg_id)
+
+    def keepalive(self, server_tick: int):
+        self.keepalive_tick = server_tick
+
+    def is_keepalive(self, current_server_tick: int):
+        return current_server_tick - self.keepalive_tick > player.keepalive_ticks

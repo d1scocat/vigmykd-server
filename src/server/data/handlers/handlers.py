@@ -41,6 +41,7 @@ class CTSHandlers:
         server_tick = ctx.tick
 
         match.queue_input(player, client_tick, server_tick, payload)
+        player.keepalive(server_tick)
 
     @staticmethod
     async def cts_matchmaking_enter(

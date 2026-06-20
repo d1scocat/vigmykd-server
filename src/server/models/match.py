@@ -180,6 +180,22 @@ class Match:
 
             logger.info(f"[SERVER] {tick=}, {player.player_id=} | Finished calculating position: {player.position!r}")
 
+    def kick_player(self, player: Player, reason: str | None = None):
+        if player.player_id not in self._players:
+            return
+        
+        self._players.pop(player.player_id, None)
+        logger.info("Kicked player %r from match %r. Reason: '%s'",
+                    player.player_id, self.match_id, reason or "Not specified")
+        self.check_victory()
+
+    def check_victory(self):
+        # add more conditions later
+        if len(self._players) == 1:
+            # one player just left loll
+            # mark victory somehow later
+            self.kick_player(list(self._players.values())[0])
+
 
 class MatchManager:
     def __init__(self) -> None:
@@ -310,3 +326,11 @@ class MatchManager:
                 envelope = Packets.envelope(response_data)
 
                 await io_handler.enqueue_single_out(envelope, player.addr)
+
+    def check_keepalive_players(self, server_tick: int):
+        for match in self._matches.values():
+            for player in match.players.values():
+                if player.is_keepalive(server_tick):
+                    continue
+
+                match.kick_player(player, "Keepalive packets missing for 10+ seconds")
