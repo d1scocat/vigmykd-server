@@ -184,8 +184,10 @@ class SocketIOHandler:
         return True
 
     async def handle_envelope(self, envelope: packet_pb2.Envelope, client: UDPAddress):
+        logger.info("[DEBUG] got envelope")
         match envelope.WhichOneof("payload"):
             case "signed_packet":
+                logger.info("--> signed packet ")
                 signed_packet = envelope.signed_packet
                 if not PacketSigner.verify(signed_packet):
                     logger.warning("Invalid signature from %s", client)
@@ -199,12 +201,15 @@ class SocketIOHandler:
 
                 match packet.WhichOneof("payload"):
                     case "icp":
+                        logger.info(f"----> {msg_id} ICP")
                         await self._dispatch(packet.icp, client, msg_id, "icp")
                     case _:
+                        logger.info(f"----> {msg_id} unknown")
                         logger.debug("Unhandled signed packet payload: %s",
                                      packet.WhichOneof("payload"))
 
             case "packet":
+                logger.info("--> packet")
                 packet = envelope.packet
                 msg_id = packet.msg_id
 
@@ -213,9 +218,11 @@ class SocketIOHandler:
 
                 match packet.WhichOneof("payload"):
                     case "server_to_client":
+                        logger.info(f"----> {msg_id} stc ???")
                         # Throw away (how tf did it get here anyway?)
                         return
                     case "client_to_server":
+                        logger.info(f"----> {msg_id} cts")
                         await self._dispatch(packet.client_to_server, client, msg_id, "cts")
 
             case _:

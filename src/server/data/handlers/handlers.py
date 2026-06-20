@@ -51,6 +51,7 @@ class CTSHandlers:
         io_handler: 'server.data.all_handler.SocketIOHandler',
         msg_id: int,
     ):
+        logger.info("CTS MATCHMAKING ENTER")
         match_id = payload.match_id
         join_token = payload.join_token
 
@@ -80,7 +81,6 @@ class CTSHandlers:
         except ActionFailed:
             ok = False
         finally:
-            logger.info("[DEBUG] Sending ACK to msg_id %d with ok=%r", msg_id, ok)
             packet = Packets.envelope(Packets.ack(msg_id, ok=ok))
             await io_handler.enqueue_single_out(packet, client)
             return
