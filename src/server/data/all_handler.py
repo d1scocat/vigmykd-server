@@ -224,6 +224,8 @@ class SocketIOHandler:
                     case "client_to_server":
                         logger.info(f"----> {msg_id} cts")
                         await self._dispatch(packet.client_to_server, client, msg_id, "cts")
+                    case other:
+                        logger.info(f"----> {msg_id} {other}")
 
             case _:
                 logger.debug("Unhandled envelope payload: %s", envelope.WhichOneof("payload"))
