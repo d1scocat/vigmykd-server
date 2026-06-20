@@ -167,7 +167,7 @@ class Match:
             elif player.last_client_tick == 0 and buffer:
                 oldest_tick = min(buffer.keys())
                 final_input = buffer.pop(oldest_tick)
-                player.last_client_tick = next_expected_tick
+                player.last_client_tick = oldest_tick
                 player.last_input = final_input
                 logger.info(f"[SERVER] {tick=}, {player.player_id=} | Bootstrapping seq with client_tick {oldest_tick}")
 
