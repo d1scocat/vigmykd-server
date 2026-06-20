@@ -69,6 +69,7 @@ class CTSHandlers:
             player.claim_address(client)
             player.keepalive(ctx.tick)
 
+            match.to_spawn(player)
             match.let_matchmake(player)
 
             packet = Packets.envelope(Packets.matchmaking_enter_response(match_id))

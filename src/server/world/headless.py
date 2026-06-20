@@ -100,9 +100,16 @@ class MapData:
 class HeadlessWorld:
     collision_grid: list[list[list[Rect]]]
 
-    def __init__(self, tmj_path: Path, tsj_path: Path):
+    def __init__(
+        self,
+        tmj_path: Path,
+        tsj_path: Path,
+        first_spawn: tuple[float, float],
+        second_spawn: tuple[float, float]
+    ):
         self.map_data = MapData.load(tmj_path)
         self.tileset = Tileset.load(tsj_path, self.map_data.first_gid)
+        self.spawns = {1: first_spawn, 2: second_spawn}
 
         self._build_collision_grid()
 

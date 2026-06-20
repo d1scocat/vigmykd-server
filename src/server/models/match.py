@@ -126,6 +126,17 @@ class Match:
             None
         )
 
+    def to_spawn(self, player: Player):
+        spawn_idx = len(self._players) + 1
+        spawn = self.world.spawns.get(spawn_idx)
+        if not spawn:
+            logger.warning("Could not find a suitable spawnpoint %d for player %r",
+                           spawn_idx, player.player_id)
+            return
+
+        player.position.x = spawn[0]
+        player.position.y = spawn[1]
+
     def let_matchmake(self, player: Player):
         if player.player_id not in self._players:
             return  # a match can only modify its own players

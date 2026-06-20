@@ -1,5 +1,9 @@
 {
     "name": "testmap",
     "map_json": "testmap.tmj",
-    "tileset_json": "testmap.tsj"
+    "tileset_json": "testmap.tsj",
+    "spawns": {
+        "1": "64 500",
+        "2": "1856 500"
+    },
 }

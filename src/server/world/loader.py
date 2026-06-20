@@ -23,6 +23,8 @@ def load_map(name: str) -> HeadlessWorld | None:
         return HeadlessWorld(
             tmj_path=(world_dir / mapdata["map_json"]),
             tsj_path=(world_dir / mapdata["tileset_json"]),
+            first_spawn=tuple(map(float, mapdata["spawns"]["1"].split(" "))),
+            second_spawn=tuple(map(float, mapdata["spawns"]["2"].split(" "))),
         )
     except Exception:
         logger.exception("Failed to load map %s", name)
