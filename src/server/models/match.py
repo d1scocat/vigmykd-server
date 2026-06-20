@@ -327,7 +327,7 @@ class MatchManager:
 
                 await io_handler.enqueue_single_out(envelope, player.addr)
 
-    def check_keepalive_players(self, server_tick: int):
+    async def check_keepalive_players(self, server_tick: int):
         for match in self._matches.values():
             for player in match.players.values():
                 if player.is_keepalive(server_tick):

@@ -44,6 +44,7 @@ class Server:
             while accumul >= delta:
                 try:
                     await self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
+                    await self.ctx.match_manager.check_keepalive_players(self.ctx.tick)
                 except Exception:
                     logger.exception("TPS worker failure")
                 self.ctx.advance_simul()
