@@ -45,7 +45,10 @@ class Server:
                 try:
                     self.io_handler.check_processed_relevance()
                     await self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
-                    await self.ctx.match_manager.check_keepalive_players(self.ctx.tick)
+                    await self.ctx.match_manager.check_keepalive_players(
+                        self.ctx.tick,
+                        self.io_handler
+                    )
                 except Exception:
                     logger.exception("TPS worker failure")
                 self.ctx.advance_simul()
