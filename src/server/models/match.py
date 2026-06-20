@@ -104,8 +104,11 @@ class Match:
         )
         self._players[uuid] = player
 
-    def _remove_player(self, uuid: uuid.UUID):
+    def _remove_player(self, uuid: uuid.UUID, reason: str | None = None):
         self._players.pop(uuid, None)
+        logger.info("Kicked player %r from match %r. Reason: '%s'",
+                    uuid, self.match_id, reason or "Not specified")
+        self.check_victory()
 
     def _is_accepting(self) -> bool:
         return (self.status == MatchStatus.ACCEPTING_PLAYERS) \
@@ -180,21 +183,12 @@ class Match:
 
             logger.info(f"[SERVER] {tick=}, {player.player_id=} | Finished calculating position: {player.position!r}")
 
-    def kick_player(self, player: Player, reason: str | None = None):
-        if player.player_id not in self._players:
-            return
-        
-        self._players.pop(player.player_id, None)
-        logger.info("Kicked player %r from match %r. Reason: '%s'",
-                    player.player_id, self.match_id, reason or "Not specified")
-        self.check_victory()
-
     def check_victory(self):
         # add more conditions later
         if len(self._players) == 1:
             # one player just left loll
             # mark victory somehow later
-            self.kick_player(list(self._players.values())[0])
+            self._remove_player(list(self._players.keys())[0])
 
 
 class MatchManager:
@@ -291,7 +285,7 @@ class MatchManager:
 
         match = self.find_player_match(player_id)
         if match:
-            match._remove_player(player_id)
+            match._remove_player(player_id, "No keepalive for 10+ seconds")
             if len(match.players) == 0:
                 self._matches.pop(match.match_id, None)
 
@@ -328,13 +322,12 @@ class MatchManager:
                 await io_handler.enqueue_single_out(envelope, player.addr)
 
     async def check_keepalive_players(self, server_tick: int):
-        to_kick: dict[Match, list[Player]] = {}
+        to_kick = []
 
         for match in self._matches.values():
             for player in match.players.values():
                 if not player.is_keepalive(server_tick):
-                    to_kick.setdefault(match, []).append(player)
-        
-        for match, players in to_kick.items():
-            for player in players:
-                match.kick_player(player, "Keepalive packets missing for 10+ seconds")
+                    to_kick.append(player)
+
+        for player in to_kick:
+            self.quit_player(player.player_id)
