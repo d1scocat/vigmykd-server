@@ -328,9 +328,15 @@ class MatchManager:
                 await io_handler.enqueue_single_out(envelope, player.addr)
 
     async def check_keepalive_players(self, server_tick: int):
+        to_kick: dict[Match, list[Player]] = {}
+
         for match in self._matches.values():
             for player in match.players.values():
                 if player.is_keepalive(server_tick):
                     continue
 
+                to_kick.setdefault(match, []).append(player)
+        
+        for match, players in to_kick.items():
+            for player in players:
                 match.kick_player(player, "Keepalive packets missing for 10+ seconds")
