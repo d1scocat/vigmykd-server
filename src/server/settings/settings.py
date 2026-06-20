@@ -12,6 +12,7 @@ class EnvSettings(BaseSettings):
     reack_interval: float = Field(...)
     packet_size: int = Field(...)
     keep_processed: int = Field(...)
+    expire_processed_ticks: int = Field(...)
 
     tps: int = Field(...)
 

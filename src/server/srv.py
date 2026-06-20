@@ -43,6 +43,7 @@ class Server:
 
             while accumul >= delta:
                 try:
+                    self.io_handler.check_processed_relevance()
                     await self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
                     await self.ctx.match_manager.check_keepalive_players(self.ctx.tick)
                 except Exception:

@@ -45,6 +45,7 @@ class SocketIOHandler:
 
         self._processed_set: set[MKey] = set()
         self._processed_queue: deque[MKey] = deque(maxlen=config.keep_processed)
+        self._processed_ticks_ago: dict[MKey, int] = {}
 
         self.incoming = asyncio.Queue(maxsize=config.queue_size)
         self.outgoing: asyncio.Queue[_WaitingPacket] = asyncio.Queue(maxsize=config.queue_size)
@@ -184,10 +185,8 @@ class SocketIOHandler:
         return True
 
     async def handle_envelope(self, envelope: packet_pb2.Envelope, client: UDPAddress):
-        logger.info("[DEBUG] got envelope")
         match envelope.WhichOneof("payload"):
             case "signed_packet":
-                logger.info("--> signed packet ")
                 signed_packet = envelope.signed_packet
                 if not PacketSigner.verify(signed_packet):
                     logger.warning("Invalid signature from %s", client)
@@ -201,15 +200,11 @@ class SocketIOHandler:
 
                 match packet.WhichOneof("payload"):
                     case "icp":
-                        logger.info(f"----> {msg_id} ICP")
                         await self._dispatch(packet.icp, client, msg_id, "icp")
-                    case _:
-                        logger.info(f"----> {msg_id} unknown")
-                        logger.debug("Unhandled signed packet payload: %s",
-                                     packet.WhichOneof("payload"))
+                    case other:
+                        logger.debug("Unhandled signed packet payload: %s", other)
 
             case "packet":
-                logger.info("--> packet")
                 packet = envelope.packet
                 msg_id = packet.msg_id
 
@@ -218,14 +213,12 @@ class SocketIOHandler:
 
                 match packet.WhichOneof("payload"):
                     case "server_to_client":
-                        logger.info(f"----> {msg_id} stc ???")
                         # Throw away (how tf did it get here anyway?)
                         return
                     case "client_to_server":
-                        logger.info(f"----> {msg_id} cts")
                         await self._dispatch(packet.client_to_server, client, msg_id, "cts")
                     case other:
-                        logger.info(f"----> {msg_id} {other}")
+                        logger.debug("Unhandled signed packet payload: %s", other)
 
             case _:
                 logger.debug("Unhandled envelope payload: %s", envelope.WhichOneof("payload"))
@@ -262,9 +255,24 @@ class SocketIOHandler:
         if len(self._processed_queue) == self._processed_queue.maxlen:
             oldest_key = self._processed_queue[0]
             self._processed_set.discard(oldest_key)
+            self._processed_ticks_ago.pop(oldest_key, None)
 
         self._processed_queue.append(key)
         self._processed_set.add(key)
+        self._processed_ticks_ago[key] = 0
 
     def _was_processed(self, key: MKey):
         return key in self._processed_set
+
+    def check_processed_relevance(self):
+        drop = []
+
+        for key, value in self._processed_ticks_ago.items():
+            self._processed_ticks_ago[key] += 1
+            if value + 1 >= config.expire_processed_ticks:
+                drop.append(key)
+
+        for key in drop:
+            if key in self._processed_set:
+                self._processed_set.remove(key)
+            self._processed_ticks_ago.pop(key, None)
