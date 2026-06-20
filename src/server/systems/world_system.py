@@ -1,5 +1,5 @@
-from server.models.player import Player
-from server.settings import player
+from server.models.player import Player, Rect
+from server.settings import player, phys
 from server.systems import System
 from server.world.headless import HeadlessWorld
 
@@ -40,4 +40,20 @@ class WorldSystem(System[Player]):
 
             sub.position.vel_y = 0
         else:
-            sub.position.is_grounded = False
+            if sub.position.vel_y >= 0:
+                ground_rect = Rect(
+                    sub.position.x,
+                    sub.position.y + player.hitbox_height,
+                    player.hitbox_width,
+                    phys.ground_tolerance
+                )
+                ground_coll = world.get_collision(ground_rect)
+
+                if ground_coll:
+                    sub.position.is_grounded = True
+                    sub.position.y = ground_coll.top - player.hitbox_height
+                    sub.position.vel_y = 0
+                else:
+                    sub.position.is_grounded = False
+            else:
+                sub.position.is_grounded = False

@@ -75,10 +75,19 @@ class MoveSystem(System[Player]):
         elif sub.position.vel_x < 0:
             sub.position.facing = Facing.NEG_X
 
+        # === === === coyote time === === ===
+        if sub.position.is_grounded:
+            sub.physics.coyote_timer = phys.coyote
+        else:
+            if sub.physics.coyote_timer > 0:
+                sub.physics.coyote_timer -= 1
+
         # === === === y movement: jump === === ===
-        if player_input.jump and sub.position.is_grounded and not player_input.duck:
+        can_jump = sub.position.is_grounded or sub.physics.coyote_timer > 0
+        if player_input.jump and not player_input.duck and can_jump:
             sub.position.vel_y = phys.jump_force
             sub.position.is_grounded = False
+            sub.physics.coyote_timer = 0
 
         # === === === y movement: gravity === === ===
         if not sub.position.is_grounded:

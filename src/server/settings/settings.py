@@ -35,6 +35,8 @@ class PhysicsSettings(BaseSettings):
     air_decel_x: float = Field(...)
     fast_fall_multiplier: float = Field(...)
     air_drag: float = Field(...)
+    ground_tolerance: int = Field(...)
+    coyote: int = Field(...)
 
     model_config = SettingsConfigDict(env_prefix="movement_")
 
