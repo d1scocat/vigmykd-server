@@ -51,7 +51,6 @@ class CTSHandlers:
         io_handler: 'server.data.all_handler.SocketIOHandler',
         msg_id: int,
     ):
-        logger.info("CTS MATCHMAKING ENTER")
         match_id = payload.match_id
         join_token = payload.join_token
 
