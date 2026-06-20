@@ -57,12 +57,15 @@ class CTSHandlers:
         ok = True
 
         try:  # exception driven flow management
+            logger.info("[DEBUG] Trying to enter match %r on behalf of %r", match_id, client)
             match = ctx.match_manager.get_match(match_id)
             if not match:
+                logger.info("[DEBUG] No match %r exists", match_id)
                 raise ActionFailed
 
             player = match.get_player_by_token(join_token)
             if not player:
+                logger.info("[DEBUG] No player with join_token %r exists", join_token)
                 raise ActionFailed
 
             logger.info(f"Player {player.player_id!r} claimed address {client!r}")
@@ -77,6 +80,7 @@ class CTSHandlers:
         except ActionFailed:
             ok = False
         finally:
+            logger.info("[DEBUG] Sending ACK to msg_id %d with ok=%r", msg_id, ok)
             packet = Packets.envelope(Packets.ack(msg_id, ok=ok))
             await io_handler.enqueue_single_out(packet, client)
             return
@@ -161,6 +165,7 @@ class ICPHandlers:
         joined_match_id = match_id
 
         try:
+            logger.info("[DEBUG] Trying to register match for %r", client)
             # Before creating a match, check whether there are any matches queuing
             joined_existing = False
             
@@ -185,7 +190,6 @@ class ICPHandlers:
                         break
 
             if not joined_existing:
-                # don't set client, let `MatchmakingEnter` do that
                 name, world = ctx.match_manager.random_map()
                 match = Match(
                     match_id,
@@ -200,10 +204,12 @@ class ICPHandlers:
             logger.warning("Could not create match", exc_info=True)
             ok = False
         finally:
+            logger.info("[DEBUG] Sending ACK for %d with ok=%r to %r", msg_id, ok, client)
             packet = Packets.envelope(Packets.ack(msg_id, ok=ok))
             await io_handler.enqueue_single_out(packet, client)
 
             if ok:
+                logger.info("[DEBUG] Sending RegisterMatchResponse")
                 await io_handler.enqueue_single_out(
                     Packets.envelope(
                         Packets.register_match_response(
