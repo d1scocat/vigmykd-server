@@ -276,7 +276,7 @@ class MatchManager:
         match._add_player(player_id, name, join_token, client)
         return True
 
-    def quit_player(self, player_id: uuid.UUID | str):
+    def quit_player(self, player_id: uuid.UUID | str, reason: str | None = None):
         if isinstance(player_id, str):
             try:
                 player_id = uuid.UUID(player_id)
@@ -285,7 +285,7 @@ class MatchManager:
 
         match = self.find_player_match(player_id)
         if match:
-            match._remove_player(player_id, "No keepalive for 10+ seconds")
+            match._remove_player(player_id, reason)
             if len(match.players) == 0:
                 self._matches.pop(match.match_id, None)
 
@@ -330,4 +330,4 @@ class MatchManager:
                     to_kick.append(player)
 
         for player in to_kick:
-            self.quit_player(player.player_id)
+            self.quit_player(player.player_id, "No keepalive for 10+ seconds")
