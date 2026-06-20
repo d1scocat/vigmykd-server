@@ -332,10 +332,8 @@ class MatchManager:
 
         for match in self._matches.values():
             for player in match.players.values():
-                if player.is_keepalive(server_tick):
-                    continue
-
-                to_kick.setdefault(match, []).append(player)
+                if not player.is_keepalive(server_tick):
+                    to_kick.setdefault(match, []).append(player)
         
         for match, players in to_kick.items():
             for player in players:

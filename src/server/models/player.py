@@ -95,4 +95,5 @@ class Player:
         self.keepalive_tick = server_tick
 
     def is_keepalive(self, current_server_tick: int):
+        print(f"{current_server_tick=}, {self.keepalive_tick=}, {player.keepalive_ticks=}")
         return current_server_tick - self.keepalive_tick > player.keepalive_ticks
