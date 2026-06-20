@@ -67,6 +67,8 @@ class CTSHandlers:
 
             logger.info(f"Player {player.player_id!r} claimed address {client!r}")
             player.claim_address(client)
+            player.keepalive(ctx.tick)
+
             match.let_matchmake(player)
 
             packet = Packets.envelope(Packets.matchmaking_enter_response(match_id))
