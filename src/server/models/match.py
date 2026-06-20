@@ -76,7 +76,7 @@ class Match:
         self.move_system = MoveSystem()
         self.world_system = WorldSystem()
 
-        self.input_queues: dict[uuid.UUID, deque] = {}
+        self.input_buffers: dict[uuid.UUID, dict[int, PlayerInput]] = {}
 
     @property
     def players(self):
@@ -138,8 +138,6 @@ class Match:
         payload: packet_pb2.PlayerMoveState
     ):
         """Queues input for the upcoming server tick."""
-        #if client_tick > player.last_client_tick:
-        #    player.last_client_tick = client_tick
         if client_tick <= player.last_client_tick:
             return
 
@@ -150,28 +148,32 @@ class Match:
             dash=payload.dash
         )
 
-        queue = self.input_queues.setdefault(player.player_id, deque())
-
-        # tick X+1 might arrive later than tick X
-        # gotta fucking love UDP
-        if queue and queue[-1][0] >= client_tick:
-            return
-
-        queue.append((client_tick, player_input))
+        buffer = self.input_buffers.setdefault(player.player_id, {})
+        buffer[client_tick] = player_input
 
     def simulate(self, tick: int):
         for player in self.players.values():
-            queue = self.input_queues.get(player.player_id, None)
+            buffer = self.input_buffers.get(player.player_id, {})
+
+            next_expected_tick = player.last_client_tick + 1
             final_input = None
 
-            if queue:
-                client_tick, final_input = queue.popleft()
-                logger.info(f"[SERVER] {tick=}, {player.player_id=} | {len(queue)=} | Processing input for client_tick {client_tick}")
+            if next_expected_tick in buffer:
+                final_input = buffer.pop(next_expected_tick)
+                player.last_client_tick = next_expected_tick
                 player.last_input = final_input
-                player.last_client_tick = client_tick
+                logger.info(f"[SERVER] {tick=}, {player.player_id=} | Processing input for client_tick {next_expected_tick}")
+
+            elif player.last_client_tick == 0 and buffer:
+                oldest_tick = min(buffer.keys())
+                final_input = buffer.pop(oldest_tick)
+                player.last_client_tick = next_expected_tick
+                player.last_input = final_input
+                logger.info(f"[SERVER] {tick=}, {player.player_id=} | Bootstrapping seq with client_tick {oldest_tick}")
+
             else:
-                logger.info(f"[SERVER] {tick=}, {player.player_id=} | len(queue)={0 if not queue else len(queue)} | No input, using last_input")
                 final_input = player.last_input or PlayerInput()
+                logger.info(f"[SERVER] {tick=}, {player.player_id=} | No input for {next_expected_tick}, using last_input")
 
             self.move_system.act_on(player, final_input)
             self.world_system.act_on(player, self.world)
