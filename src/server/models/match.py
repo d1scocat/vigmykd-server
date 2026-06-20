@@ -110,7 +110,7 @@ class Match:
         reason: str | None = None,
         reason_i18n: str | None = None,
         send_packet: bool = False,
-        io_handler: 'server.data.all_handler.SocketIOHandler' | None = None
+        io_handler: 'server.data.all_handler.SocketIOHandler | None' = None
     ):
         player = self._players.pop(uuid, None)
         if not player:
@@ -326,7 +326,7 @@ class MatchManager:
         reason: str | None = None,
         reason_i18n: str | None = None,
         send_packet: bool = False,
-        io_handler: 'server.data.all_handler.SocketIOHandler' | None = None
+        io_handler: 'server.data.all_handler.SocketIOHandler | None' = None
     ):
         if isinstance(player_id, str):
             try:
