@@ -177,6 +177,28 @@ class Packets:
         return packet
 
     @staticmethod
+    def kicked_from_match(
+        match_id: str,
+        player_id: str,
+        reason_i18n: str,
+        msg_id: int | None = None
+    ):
+        """`envelope()` a packet before sending!"""
+        from server.models.player import Facing
+
+        if msg_id is None:
+            msg_id = Packets.get_next_id()
+
+        packet = packet_pb2.Packet()
+        packet.msg_id = msg_id
+
+        packet.server_to_client.kicked_from_match.match_id = match_id
+        packet.server_to_client.kicked_from_match.player_id = player_id
+        packet.server_to_client.kicked_from_match.reason_i18n = reason_i18n
+
+        return packet
+
+    @staticmethod
     @overload
     def envelope(
         payload: packet_pb2.Packet,

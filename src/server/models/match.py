@@ -333,7 +333,11 @@ class MatchManager:
 
                 await io_handler.enqueue_single_out(envelope, player.addr)
 
-    async def check_keepalive_players(self, server_tick: int):
+    async def check_keepalive_players(
+        self,
+        server_tick: int,
+        io_handler: 'server.data.all_handler.SocketIOHandler'
+    ):
         to_kick = []
 
         for match in self._matches.values():
@@ -342,4 +346,22 @@ class MatchManager:
                     to_kick.append(player)
 
         for player in to_kick:
+            match = self.find_player_match(player.player_id)
+            if not match:
+                continue  # wtf?
+
             self.quit_player(player.player_id, "No keepalive for 10+ seconds")
+
+            packet = Packets.kicked_from_match(
+                match_id=match.match_id,
+                player_id=str(player.player_id),
+                reason_i18n="kick.no-keepalive"
+            )
+            envelope = Packets.envelope(packet)
+
+            await io_handler.enqueue_single_out(
+                envelope,
+                player.addr,
+                needs_ack=True,
+                ack_id=packet.msg_id
+            )

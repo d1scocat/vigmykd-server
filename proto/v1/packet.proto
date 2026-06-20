@@ -67,6 +67,12 @@ message Reconcile {
     uint32 last_client_tick = 3;
 }
 
+message KickedFromMatch {
+    string match_id = 1;
+    string player_id = 2;
+    string reason_i18n = 3;
+}
+
 
 
 message MatchmakingEnter {
@@ -100,6 +106,7 @@ message ServerToClientPacket {
         InformMatchStart inform_match_start = 5;
         RequestMatchInfoResponse request_match_info_response = 6;
         Reconcile reconcile = 7;
+        KickedFromMatch kicked_from_match = 8;
     }
 }
 
