@@ -39,6 +39,7 @@ class PhysicsSettings(BaseSettings):
     ground_tolerance: int = Field(...)
     coyote: int = Field(...)
     jump_buffer_ticks: int = Field(...)
+    step_height: float = Field(...)
 
     model_config = SettingsConfigDict(env_prefix="movement_")
 

@@ -16,12 +16,16 @@ class WorldSystem(System[Player]):
             overlap_left = (sub.position.x + player.hitbox_width) - coll_rect.left
             overlap_right = coll_rect.right - sub.position.x
 
-            if abs(overlap_left) < abs(overlap_right):
-                sub.position.x = coll_rect.left - player.hitbox_width
-            else:
-                sub.position.x = coll_rect.right
+            overlap_top = (sub.position.y + player.hitbox_height) - coll_rect.top
 
-            sub.position.vel_x = 0
+            if sub.position.is_grounded and 0 < overlap_top < phys.step_height:
+                sub.position.y -= (overlap_top + 0.02)
+            else:
+                if abs(overlap_left) < abs(overlap_right):
+                    sub.position.x = coll_rect.left - player.hitbox_width
+                else:
+                    sub.position.x = coll_rect.right
+                sub.position.vel_x = 0
 
         # === === === y axis === === ==
         sub.position.y += sub.position.vel_y
@@ -32,10 +36,10 @@ class WorldSystem(System[Player]):
             overlap_bottom = coll_rect.bottom - sub.position.y
 
             if abs(overlap_top) < abs(overlap_bottom):
-                sub.position.y = coll_rect.top - player.hitbox_height
+                sub.position.y = coll_rect.top - player.hitbox_height - 0.009
                 sub.position.is_grounded = True
             else:
-                sub.position.y = coll_rect.bottom
+                sub.position.y = coll_rect.bottom + 0.009
                 sub.position.is_grounded = False
 
             sub.position.vel_y = 0
