@@ -5,6 +5,11 @@ from server.systems import System
 
 class MoveSystem(System[Player]):
     def act_on(self, sub: Player, player_input: PlayerInput):
+        if player_input.jump:
+            sub.physics.jump_buffer_timer = phys.jump_buffer_ticks
+        elif sub.physics.jump_buffer_timer > 0:
+            sub.physics.jump_buffer_timer -= 1
+
         # === === === dashing === === === #
         if player_input.dash and not sub.position.dashing:
             sub.position.dashing = True
@@ -17,6 +22,7 @@ class MoveSystem(System[Player]):
 
             # dashing in place (jumping up high)
             elif sub.position.is_grounded and player_input.move_dir == 0 and not player_input.duck:
+                sub.position.vel_x = 0.0
                 sub.position.vel_y = phys.max_jump_force
                 sub.position.is_grounded = False
 
@@ -24,6 +30,7 @@ class MoveSystem(System[Player]):
             else:
                 dash_dir = player_input.move_dir if player_input.move_dir != 0 else 1
                 sub.position.vel_x = dash_dir * phys.dash_speed
+                sub.position.vel_y = 0.0
 
         if sub.position.dashing:
             sub.physics.dash_timer -= 1
@@ -84,10 +91,13 @@ class MoveSystem(System[Player]):
 
         # === === === y movement: jump === === ===
         can_jump = sub.position.is_grounded or sub.physics.coyote_timer > 0
-        if player_input.jump and not player_input.duck and can_jump:
+        has_jump_buffer = sub.physics.jump_buffer_timer > 0
+
+        if has_jump_buffer and not player_input.duck and can_jump:
             sub.position.vel_y = phys.jump_force
             sub.position.is_grounded = False
             sub.physics.coyote_timer = 0
+            sub.physics.jump_buffer_timer = 0
 
         # === === === y movement: gravity === === ===
         if not sub.position.is_grounded:
