@@ -136,6 +136,7 @@ class Match:
 
         player.position.x = spawn[0]
         player.position.y = spawn[1]
+        logger.info("Moved player %r to spawnpoint %r", player.player_id, spawn)
 
     def let_matchmake(self, player: Player):
         if player.player_id not in self._players:

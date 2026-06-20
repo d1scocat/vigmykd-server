@@ -3,7 +3,7 @@
     "map_json": "testmap.tmj",
     "tileset_json": "testmap.tsj",
     "spawns": {
-        "1": "64 500",
-        "2": "1856 500"
-    },
+        "1": "160 500",
+        "2": "1760 500"
+    }
 }
