@@ -100,7 +100,7 @@ class CTSHandlers:
             if not match:
                 raise ActionFailed
 
-            ctx.match_manager.quit_player(player.player_id)  # can fail silently for idempotency
+            await ctx.match_manager.quit_player(player.player_id)  # can fail silently for idempotency
 
             packet = Packets.envelope(Packets.matchmaking_enter_response(match.match_id))
             await io_handler.enqueue_single_out(packet, client)

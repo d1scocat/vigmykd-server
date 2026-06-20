@@ -104,11 +104,37 @@ class Match:
         )
         self._players[uuid] = player
 
-    def _remove_player(self, uuid: uuid.UUID, reason: str | None = None):
-        self._players.pop(uuid, None)
+    async def _remove_player(
+        self,
+        uuid: uuid.UUID,
+        reason: str | None = None,
+        reason_i18n: str | None = None,
+        send_packet: bool = False,
+        io_handler: 'server.data.all_handler.SocketIOHandler' | None = None
+    ):
+        player = self._players.pop(uuid, None)
+        if not player:
+            return
+
         logger.info("Kicked player %r from match %r. Reason: '%s'",
                     uuid, self.match_id, reason or "Not specified")
-        self.check_victory()
+        
+        if send_packet and io_handler and reason_i18n:
+            packet = Packets.kicked_from_match(
+                match_id=self.match_id,
+                player_id=str(player.player_id),
+                reason_i18n=reason_i18n
+            )
+            envelope = Packets.envelope(packet)
+
+            await io_handler.enqueue_single_out(
+                envelope,
+                player.addr,
+                needs_ack=True,
+                ack_id=packet.msg_id
+            )
+
+        await self.check_victory(io_handler)
 
     def _is_accepting(self) -> bool:
         return (self.status == MatchStatus.ACCEPTING_PLAYERS) \
@@ -195,12 +221,18 @@ class Match:
 
             logger.info(f"[SERVER] {tick=}, {player.player_id=} | Finished calculating position: {player.position!r}")
 
-    def check_victory(self):
+    async def check_victory(self, io_handler: 'server.data.all_handler.SocketIOHandler'):
         # add more conditions later
         if len(self._players) == 1:
             # one player just left loll
             # mark victory somehow later
-            self._remove_player(list(self._players.keys())[0])
+            await self._remove_player(
+                uuid=list(self._players.keys())[0],
+                reason="Victory (by resignation)",
+                reason_i18n="kick.victory-by-resignation",
+                send_packet=True,
+                io_handler=io_handler
+            )
 
 
 class MatchManager:
@@ -288,7 +320,14 @@ class MatchManager:
         match._add_player(player_id, name, join_token, client)
         return True
 
-    def quit_player(self, player_id: uuid.UUID | str, reason: str | None = None):
+    async def quit_player(
+        self,
+        player_id: uuid.UUID | str,
+        reason: str | None = None,
+        reason_i18n: str | None = None,
+        send_packet: bool = False,
+        io_handler: 'server.data.all_handler.SocketIOHandler' | None = None
+    ):
         if isinstance(player_id, str):
             try:
                 player_id = uuid.UUID(player_id)
@@ -297,7 +336,7 @@ class MatchManager:
 
         match = self.find_player_match(player_id)
         if match:
-            match._remove_player(player_id, reason)
+            await match._remove_player(player_id, reason, reason_i18n, send_packet, io_handler)
             if len(match.players) == 0:
                 self._matches.pop(match.match_id, None)
 
@@ -350,18 +389,10 @@ class MatchManager:
             if not match:
                 continue  # wtf?
 
-            self.quit_player(player.player_id, "No keepalive for 10+ seconds")
-
-            packet = Packets.kicked_from_match(
-                match_id=match.match_id,
-                player_id=str(player.player_id),
-                reason_i18n="kick.no-keepalive"
-            )
-            envelope = Packets.envelope(packet)
-
-            await io_handler.enqueue_single_out(
-                envelope,
-                player.addr,
-                needs_ack=True,
-                ack_id=packet.msg_id
+            await self.quit_player(
+                player.player_id,
+                "No keepalive for 10+ seconds",
+                "kick.no-keepalive",
+                True,
+                io_handler
             )
