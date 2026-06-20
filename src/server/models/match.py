@@ -127,7 +127,7 @@ class Match:
         )
 
     def to_spawn(self, player: Player):
-        spawn_idx = len(self._players) + 1
+        spawn_idx = len(self._players)
         spawn = self.world.spawns.get(spawn_idx)
         if not spawn:
             logger.warning("Could not find a suitable spawnpoint %d for player %r",
