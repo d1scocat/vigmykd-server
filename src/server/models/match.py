@@ -82,7 +82,7 @@ class Match:
         self.move_system = MoveSystem()
         self.world_system = WorldSystem()
 
-        self.input_buffers: dict[uuid.UUID, PendingInput] = {}
+        self.input_buffers: dict[uuid.UUID, dict[int, PendingInput]] = {}
 
     @property
     def players(self):
@@ -185,7 +185,7 @@ class Match:
         payload: packet_pb2.PlayerMoveState
     ):
         """Queues input for the upcoming server tick."""
-        self.input_buffers[player.player_id] = PendingInput(
+        self.input_buffers.setdefault(player.player_id, {})[client_tick] = PendingInput(
             client_tick=client_tick,
             player_input = PlayerInput(
                 move_dir=payload.move_dir,
@@ -197,19 +197,24 @@ class Match:
 
     def simulate(self, tick: int):
         for player in self.players.values():
-            pending = self.input_buffers.get(player.player_id)
+            buffer = self.input_buffers.get(player.player_id, {})
 
-            if pending is not None:
+            if buffer:
+                client_tick = min(buffer.keys())
+                pending = buffer.pop(client_tick)
                 final_input = pending.player_input
                 player.last_input = final_input
-                player.last_client_tick = pending.client_tick
+                player.last_client_tick = client_tick
             else:
-                final_input = player.last_input or PlayerInput(
-                    move_dir=player.last_input.move_dir,
-                    duck=player.last_input.duck,
-                    dash=False,
-                    jump=False
-                )
+                if player.last_input:
+                    final_input = PlayerInput(
+                        move_dir=player.last_input.move_dir,
+                        duck=player.last_input.duck,
+                        dash=False,
+                        jump=False
+                    )
+                else:
+                    final_input = PlayerInput()
 
             self.move_system.act_on(player, final_input or PlayerInput())
             self.world_system.act_on(player, self.world)
