@@ -369,6 +369,9 @@ class MatchManager:
 
     async def share_reconcile(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
         for _, match in self._matches.items():
+            if match.status != MatchStatus.IN_GAME:
+                continue
+
             for player in match.players.values():
                 response_data = Packets.reconcile(
                     server_tick=tick,
