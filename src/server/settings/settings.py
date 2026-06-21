@@ -15,6 +15,8 @@ class EnvSettings(BaseSettings):
     expire_processed_ticks: int = Field(...)
 
     tps: int = Field(...)
+    reconcile_interval: int = Field(...)
+    max_worker_steps: int = Field(...)
 
     model_config = SettingsConfigDict(env_prefix="vigmykd_")
 

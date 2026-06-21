@@ -39,10 +39,6 @@ class Server:
         accumul = 0.0
         last = loop.time()
 
-        # cba to extract, maybe later
-        RECONCILE_INTERVAL = 4
-        MAX_STEPS = 5
-
         tick_counter = 0
 
         while True:
@@ -52,13 +48,13 @@ class Server:
 
             steps = 0
 
-            while accumul >= delta and steps < MAX_STEPS:
+            while accumul >= delta and steps < config.max_worker_steps:
                 self.ctx.match_manager.simulate(self.ctx.tick)
                 self.ctx.advance_simul()
 
                 tick_counter += 1
 
-                if tick_counter % RECONCILE_INTERVAL == 0:
+                if tick_counter % config.reconcile_interval == 0:
                     asyncio.create_task(
                         self.ctx.match_manager.share_reconcile(
                             self.ctx.tick,
