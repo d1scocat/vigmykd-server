@@ -48,6 +48,7 @@ class Server:
             while accumul >= delta and steps < config.max_worker_steps:
                 self.ctx.match_manager.simulate(self.ctx.tick)
                 self.ctx.advance_simul()
+                self.io_handler.check_processed_relevance()
 
                 tick_counter += 1
 
