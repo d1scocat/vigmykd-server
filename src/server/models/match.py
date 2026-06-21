@@ -196,16 +196,14 @@ class Match:
         for player in self.players.values():
             buffer = self.input_buffers.get(player.player_id, {})
 
-            next_expected_tick = player.last_client_tick + 1
-
-            old_ticks = [tick for tick in buffer if tick < next_expected_tick]
-            for tick in old_ticks:
-                buffer.pop(tick)
-
-            if next_expected_tick in buffer:
-                final_input = buffer.pop(next_expected_tick)
+            if buffer:
+                oldest_tick = min(buffer.keys())
+                final_input = buffer.pop(oldest_tick)
                 player.last_input = final_input
+                player.last_client_tick = oldest_tick
             else:
+                player.last_client_tick += 1
+
                 if player.last_input:
                     final_input = PlayerInput(
                         move_dir=player.last_input.move_dir,
@@ -215,8 +213,6 @@ class Match:
                     )
                 else:
                     final_input = PlayerInput()
-
-            player.last_client_tick = next_expected_tick
 
             self.move_system.act_on(player, final_input or PlayerInput())
             self.world_system.act_on(player, self.world)
