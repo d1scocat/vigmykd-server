@@ -377,6 +377,12 @@ class MatchManager:
 
                 envelope = Packets.envelope(response_data)
 
+                print(
+                    f"SEND RECONCILE "
+                    f"server_tick={tick} "
+                    f"last_client_tick={player.last_client_tick} "
+                    f"x={player.position.x}"
+                )
                 await io_handler.enqueue_single_out(envelope, player.addr)
 
     async def check_keepalive_players(
