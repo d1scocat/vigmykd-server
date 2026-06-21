@@ -187,7 +187,7 @@ class Match:
         )
 
         buffer = self.input_buffers.setdefault(player.player_id, {})
-        buffer[server_tick] = player_input
+        buffer[client_tick] = player_input
 
     def simulate(self, tick: int):
         for player in self.players.values():
