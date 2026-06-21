@@ -51,5 +51,7 @@ class PlayerSettings(BaseSettings):
     hitbox_height: float = Field(...)
     hitbox_height_ducking: float = Field(...)
     keepalive_ticks: int = Field(...)
+    max_mana: int = Field(...)
+    dash_mana_cost: int = Field(...)
 
     model_config = SettingsConfigDict(env_prefix="player_")

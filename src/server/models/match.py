@@ -9,6 +9,7 @@ from types import MappingProxyType
 from server.data.factory import Packets
 from server.log import logger
 from server.models.player import Facing, Position, Player, PlayerStatus, PlayerInput
+from server.settings import player as pl
 from server.systems.move_system import MoveSystem
 from server.systems.world_system import WorldSystem
 from server.world import loader
@@ -231,6 +232,10 @@ class Match:
                 io_handler=io_handler
             )
 
+    def ensure_mana(self):
+        for player in self._players.values():
+            player.mana = min(pl.max_mana, player.mana + 1)
+
 
 class MatchManager:
     def __init__(self) -> None:
@@ -398,3 +403,7 @@ class MatchManager:
                 True,
                 io_handler
             )
+
+    def ensure_mana(self):
+        for match in self._matches.values():
+            match.ensure_mana()

@@ -153,29 +153,31 @@ class Packets:
         packet_players = []
 
         for player in players:
-            pos_data = packet_pb2.PositionData()
+            rec_data = packet_pb2.ReconcileData()
 
-            pos_data.uuid = str(player.player_id)
-            pos_data.facing = (
+            rec_data.uuid = str(player.player_id)
+            rec_data.facing = (
                 packet_pb2.Facing.FACING_NEG_X
                 if player.position.facing == Facing.NEG_X
                 else packet_pb2.Facing.FACING_POS_X
             )
 
-            pos_data.x = player.position.x
-            pos_data.y = player.position.y
-            pos_data.vel_x = player.position.vel_x
-            pos_data.vel_y = player.position.vel_y
-            pos_data.is_grounded = player.position.is_grounded
-            pos_data.is_ducking = player.position.ducking
-            pos_data.is_dashing = player.position.dashing
-            pos_data.dash_timer = player.physics.dash_timer
-            pos_data.coyote_timer = player.physics.coyote_timer
-            pos_data.jump_buffer_timer = player.physics.jump_buffer_timer
-            pos_data.last_jump_pressed = player.physics.last_jump_pressed
-            pos_data.last_dash_pressed = player.physics.last_dash_pressed
+            rec_data.x = player.position.x
+            rec_data.y = player.position.y
+            rec_data.vel_x = player.position.vel_x
+            rec_data.vel_y = player.position.vel_y
+            rec_data.is_grounded = player.position.is_grounded
+            rec_data.is_ducking = player.position.ducking
+            rec_data.is_dashing = player.position.dashing
+            rec_data.dash_timer = player.physics.dash_timer
+            rec_data.coyote_timer = player.physics.coyote_timer
+            rec_data.jump_buffer_timer = player.physics.jump_buffer_timer
+            rec_data.last_jump_pressed = player.physics.last_jump_pressed
+            rec_data.last_dash_pressed = player.physics.last_dash_pressed
 
-            packet_players.append(pos_data)
+            rec_data.mana = player.mana
+
+            packet_players.append(rec_data)
 
         packet.server_to_client.reconcile.players.extend(packet_players)
 

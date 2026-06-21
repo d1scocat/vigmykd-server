@@ -1,5 +1,5 @@
 from server.models.player import Facing, Player, PlayerInput
-from server.settings import phys
+from server.settings import phys, player
 from server.systems import System
 
 
@@ -7,10 +7,13 @@ class MoveSystem(System[Player]):
     def act_on(self, sub: Player, player_input: PlayerInput):
         # === === === dashing === === === #
         dash_just_pressed = player_input.dash and not sub.physics.last_dash_pressed
-        if dash_just_pressed and not sub.position.dashing:
+        can_dash = sub.mana >= player.dash_mana_cost
+
+        if dash_just_pressed and not sub.position.dashing and can_dash:
             sub.position.dashing = True
             sub.physics.dash_timer = phys.dash_duration_ticks + 1
             sub.physics.coyote_timer = 0
+            sub.mana -= player.dash_mana_cost
 
             # plunge down
             if not sub.position.is_grounded and player_input.duck:

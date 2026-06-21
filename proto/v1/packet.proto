@@ -41,7 +41,7 @@ message PlayerData {
     Position position = 3;
 }
 
-message PositionData {
+message ReconcileData {
     string uuid = 1;
     Facing facing = 2;
     float x = 3;
@@ -56,6 +56,7 @@ message PositionData {
     int32 jump_buffer_timer = 12;
     bool last_jump_pressed = 13;
     bool last_dash_pressed = 14;
+    int32 mana = 15;
 }
 
 message RequestMatchInfoResponse {
@@ -67,7 +68,7 @@ message RequestMatchInfoResponse {
 }
 
 message Reconcile {
-    repeated PositionData players = 1;
+    repeated ReconcileData players = 1;
     uint32 server_tick = 2;
     uint32 last_client_tick = 3;
 }

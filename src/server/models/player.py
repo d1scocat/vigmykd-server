@@ -67,6 +67,8 @@ class Player:
     keepalive_tick: int = 2**31
     missing_input_ticks: int = 0
 
+    mana: int = player.max_mana
+
     @property
     def rect(self) -> Rect:
         height = player.hitbox_height_ducking if self.position.ducking else player.hitbox_height
