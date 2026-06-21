@@ -9,7 +9,8 @@ class MoveSystem(System[Player]):
         dash_just_pressed = player_input.dash and not sub.physics.last_dash_pressed
         if dash_just_pressed and not sub.position.dashing:
             sub.position.dashing = True
-            sub.physics.dash_timer = phys.dash_duration_ticks
+            sub.physics.dash_timer = phys.dash_duration_ticks + 1
+            sub.physics.coyote_timer = 0
 
             # plunge down
             if not sub.position.is_grounded and player_input.duck:

@@ -15,12 +15,19 @@ class WorldSystem(System[Player]):
         if coll_rect:
             overlap_left = (sub.position.x + player.hitbox_width) - coll_rect.left
             overlap_right = coll_rect.right - sub.position.x
-
             overlap_top = (sub.position.y + player.hitbox_height) - coll_rect.top
 
+            stepped_up = False
             if sub.position.is_grounded and 0 < overlap_top < phys.step_height:
-                sub.position.y -= (overlap_top + 0.02)
-            else:
+                step_amount = overlap_top + 0.02
+                sub.position.y -= step_amount
+
+                if not world.get_collision(sub.rect):
+                    stepped_up = True
+                else:
+                    sub.position.y += step_amount
+
+            if not stepped_up:
                 if abs(overlap_left) < abs(overlap_right):
                     sub.position.x = coll_rect.left - player.hitbox_width
                 else:
