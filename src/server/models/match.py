@@ -179,9 +179,6 @@ class Match:
         payload: packet_pb2.PlayerMoveState
     ):
         """Queues input for the upcoming server tick."""
-        if client_tick <= player.last_client_tick:
-            return
-
         player_input = PlayerInput(
             move_dir=payload.move_dir,
             duck=payload.duck,
@@ -194,13 +191,13 @@ class Match:
 
     def simulate(self, tick: int):
         for player in self.players.values():
+            target_client_tick = tick - 3  # extract into INPUT_DELAY_TICKS or smth
             buffer = self.input_buffers.get(player.player_id, {})
 
-            if buffer:
-                oldest_tick = min(buffer.keys())
-                final_input = buffer.pop(oldest_tick)
+            if target_client_tick in buffer:
+                final_input = buffer.pop(target_client_tick)
                 player.last_input = final_input
-                player.last_client_tick = oldest_tick
+                player.last_client_tick = target_client_tick
             else:
                 player.last_client_tick += 1
 
