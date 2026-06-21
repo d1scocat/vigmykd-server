@@ -14,6 +14,9 @@ class Server:
     ):
         self.ctx = ctx
         self.io_handler = io_handler
+        # debug
+        self.tps_tick_count = 0
+        self.tps_last_time = io_handler.loop.time()
 
     async def loop(self):
         asyncio.create_task(self.io_handler.enqueue_pending_in())
@@ -36,24 +39,54 @@ class Server:
         accumul = 0.0
         last = loop.time()
 
+        # cba to extract, maybe later
+        RECONCILE_INTERVAL = 4
+        MAX_STEPS = 5
+
+        tick_counter = 0
+
         while True:
             now = loop.time()
             accumul += (now - last)
             last = now
 
-            while accumul >= delta:
-                try:
-                    self.io_handler.check_processed_relevance()
-                    await self.ctx.match_manager.simulate_and_share(self.ctx.tick, self.io_handler)
-                    await self.ctx.match_manager.check_keepalive_players(
-                        self.ctx.tick,
-                        self.io_handler
-                    )
-                except Exception:
-                    logger.exception("TPS worker failure")
-                self.ctx.advance_simul()
-                accumul -= delta
+            steps = 0
 
-            sleep = delta - accumul
-            if sleep > 0.0:
+            while accumul >= delta and steps < MAX_STEPS:
+                self.ctx.match_manager.simulate(self.ctx.tick)
+                self.ctx.advance_simul()
+
+                tick_counter += 1
+
+                if tick_counter % RECONCILE_INTERVAL == 0:
+                    asyncio.create_task(
+                        self.ctx.match_manager.share_reconcile(
+                            self.ctx.tick,
+                            self.io_handler
+                        )
+                    )
+
+                    asyncio.create_task(
+                        self.ctx.match_manager.check_keepalive_players(
+                            self.ctx.tick,
+                            self.io_handler
+                        )
+                    )
+
+                accumul -= delta
+                steps += 1
+
+            # TPS logging
+            now = loop.time()
+            self.tps_tick_count += steps
+
+            elapsed = now - self.tps_last_time
+            if elapsed >= 2.0:
+                tps = self.tps_tick_count / elapsed
+                logger.info(f"TPS: {tps:.2f}")
+                self.tps_tick_count = 0
+                self.tps_last_time = now
+
+            sleep = (last + delta) - loop.time()
+            if sleep > 0:
                 await asyncio.sleep(sleep)

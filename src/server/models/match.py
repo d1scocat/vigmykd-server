@@ -359,13 +359,15 @@ class MatchManager:
             player.status = PlayerStatus.ENTERING_GAME
             await player.inform_game_start(io_handler)
 
-    async def simulate_and_share(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
+    def simulate(self, tick: int):
         for _, match in self._matches.items():
             if match.status != MatchStatus.IN_GAME:
                 continue
 
             match.simulate(tick)
 
+    async def share_reconcile(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
+        for _, match in self._matches.items():
             for player in match.players.values():
                 response_data = Packets.reconcile(
                     server_tick=tick,
