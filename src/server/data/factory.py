@@ -169,6 +169,11 @@ class Packets:
             pos_data.is_grounded = player.position.is_grounded
             pos_data.is_ducking = player.position.ducking
             pos_data.is_dashing = player.position.dashing
+            pos_data.dash_timer = player.physics.dash_timer
+            pos_data.coyote_timer = player.physics.coyote_timer
+            pos_data.jump_buffer_timer = player.physics.jump_buffer_timer
+            pos_data.last_jump_pressed = player.physics.last_jump_pressed
+            pos_data.last_dash_pressed = player.physics.last_dash_pressed
 
             packet_players.append(pos_data)
 

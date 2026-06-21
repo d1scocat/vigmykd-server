@@ -51,6 +51,11 @@ message PositionData {
     bool is_grounded = 7;
     bool is_dashing = 8;
     bool is_ducking = 9;
+    int32 dash_timer = 10;
+    int32 coyote_timer = 11;
+    int32 jump_buffer_timer = 12;
+    bool last_jump_pressed = 13;
+    bool last_dash_pressed = 14;
 }
 
 message RequestMatchInfoResponse {
