@@ -2,7 +2,7 @@ import uuid
 import random
 import secrets
 
-from collections import deque
+from dataclasses import dataclass
 from enum import IntEnum
 from types import MappingProxyType
 
@@ -15,6 +15,12 @@ from server.world import loader
 from server.world.headless import HeadlessWorld
 
 import server.generated.v1.packet_pb2 as packet_pb2
+
+
+@dataclass
+class PendingInput:
+    client_tick: int 
+    player_input: PlayerInput
 
 
 class MatchStatus(IntEnum):
@@ -76,7 +82,7 @@ class Match:
         self.move_system = MoveSystem()
         self.world_system = WorldSystem()
 
-        self.input_buffers: dict[uuid.UUID, dict[int, PlayerInput]] = {}
+        self.input_buffers: dict[uuid.UUID, PendingInput] = {}
 
     @property
     def players(self):
@@ -179,34 +185,31 @@ class Match:
         payload: packet_pb2.PlayerMoveState
     ):
         """Queues input for the upcoming server tick."""
-        player_input = PlayerInput(
-            move_dir=payload.move_dir,
-            duck=payload.duck,
-            jump=payload.jump,
-            dash=payload.dash
+        self.input_buffers[player.player_id] = PendingInput(
+            client_tick=client_tick,
+            player_input = PlayerInput(
+                move_dir=payload.move_dir,
+                duck=payload.duck,
+                jump=payload.jump,
+                dash=payload.dash
+            )
         )
-
-        buffer = self.input_buffers.setdefault(player.player_id, {})
-        buffer[client_tick] = player_input
 
     def simulate(self, tick: int):
         for player in self.players.values():
-            buffer = self.input_buffers.get(player.player_id, {})
+            pending = self.input_buffers.get(player.player_id)
 
-            if tick in buffer:
-                final_input = buffer.pop(tick)
+            if pending is not None:
+                final_input = pending.player_input
                 player.last_input = final_input
-                player.last_client_tick = tick
+                player.last_client_tick = pending.client_tick
             else:
-                if player.last_input:
-                    final_input = PlayerInput(
-                        move_dir=player.last_input.move_dir,
-                        duck=player.last_input.duck,
-                        dash=False,
-                        jump=False
-                    )
-                else:
-                    final_input = PlayerInput()
+                final_input = player.last_input or PlayerInput(
+                    move_dir=player.last_input.move_dir,
+                    duck=player.last_input.duck,
+                    dash=False,
+                    jump=False
+                )
 
             self.move_system.act_on(player, final_input or PlayerInput())
             self.world_system.act_on(player, self.world)
