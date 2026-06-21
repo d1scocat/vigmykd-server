@@ -191,7 +191,6 @@ class Match:
 
     def simulate(self, tick: int):
         for player in self.players.values():
-            # vvv This was an unsuccessful attempt to fix my problem
             buffer = self.input_buffers.get(player.player_id, {})
 
             if tick in buffer:
@@ -199,8 +198,6 @@ class Match:
                 player.last_input = final_input
                 player.last_client_tick = tick
             else:
-                # player.last_client_tick = tick
-
                 if player.last_input:
                     final_input = PlayerInput(
                         move_dir=player.last_input.move_dir,
