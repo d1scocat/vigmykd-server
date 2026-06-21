@@ -197,41 +197,26 @@ class Match:
             buffer = self.input_buffers.get(player.player_id, {})
 
             next_expected_tick = player.last_client_tick + 1
-            final_input = None
+
+            old_ticks = [tick for tick in buffer if tick < next_expected_tick]
+            for tick in old_ticks:
+                buffer.pop(tick)
 
             if next_expected_tick in buffer:
                 final_input = buffer.pop(next_expected_tick)
-                player.last_client_tick = next_expected_tick
                 player.last_input = final_input
-                player.missing_input_ticks = 0
-                logger.info(f"[SERVER] {tick=}, {player.player_id=} | Processing input for client_tick {next_expected_tick}")
-
             else:
-                # packet loss with actions like jump can lead to horrific fucking shit
-                skipped_lost_packet = False
-                if buffer:
-                    oldest_in_buffer = min(buffer.keys())
-                    if oldest_in_buffer > next_expected_tick:
-                        player.missing_input_ticks += 1
+                if player.last_input:
+                    final_input = PlayerInput(
+                        move_dir=player.last_input.move_dir,
+                        duck=player.last_input.duck,
+                        dash=False,
+                        jump=False
+                    )
+                else:
+                    final_input = PlayerInput()
 
-                        if player.missing_input_ticks >= 5:
-                            final_input = buffer.pop(oldest_in_buffer)
-                            player.last_client_tick = oldest_in_buffer
-                            player.last_input = final_input
-                            skipped_lost_packet = True
-                            player.missing_input_ticks = 0
-
-                if not skipped_lost_packet:
-                    if player.last_input:
-                        final_input = PlayerInput(
-                            move_dir=player.last_input.move_dir,
-                            duck=player.last_input.duck,
-                            dash=False,
-                            jump=False
-                        )
-                    else:
-                        final_input = PlayerInput()
-                logger.info(f"[SERVER] {tick=}, {player.player_id=} | No input at {next_expected_tick}")
+            player.last_client_tick = next_expected_tick
 
             self.move_system.act_on(player, final_input or PlayerInput())
             self.world_system.act_on(player, self.world)
