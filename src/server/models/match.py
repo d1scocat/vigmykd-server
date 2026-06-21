@@ -217,11 +217,6 @@ class Match:
             self.move_system.act_on(player, final_input or PlayerInput())
             self.world_system.act_on(player, self.world)
 
-            player.position.vel_x = round(player.position.vel_x, 4)
-            player.position.vel_y = round(player.position.vel_y, 4)
-            player.position.x = round(player.position.x, 4)
-            player.position.y = round(player.position.y, 4)
-
             logger.info(f"[SERVER] {tick=}, {player.player_id=} | Finished calculating position: {player.position!r}")
 
     async def check_victory(self, io_handler: 'server.data.all_handler.SocketIOHandler'):
