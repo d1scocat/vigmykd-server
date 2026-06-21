@@ -187,19 +187,19 @@ class Match:
         )
 
         buffer = self.input_buffers.setdefault(player.player_id, {})
-        buffer[client_tick] = player_input
+        buffer[server_tick] = player_input
 
     def simulate(self, tick: int):
         for player in self.players.values():
-            target_client_tick = tick - 3  # extract into INPUT_DELAY_TICKS or smth
+            # vvv This was an unsuccessful attempt to fix my problem
             buffer = self.input_buffers.get(player.player_id, {})
 
-            if target_client_tick in buffer:
-                final_input = buffer.pop(target_client_tick)
+            if tick in buffer:
+                final_input = buffer.pop(tick)
                 player.last_input = final_input
-                player.last_client_tick = target_client_tick
+                player.last_client_tick = tick
             else:
-                player.last_client_tick += 1
+                # player.last_client_tick = tick
 
                 if player.last_input:
                     final_input = PlayerInput(
