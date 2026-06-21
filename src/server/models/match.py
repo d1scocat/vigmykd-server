@@ -184,12 +184,6 @@ class Match:
         server_tick: int,
         payload: packet_pb2.PlayerMoveState
     ):
-        print(
-            f"server_tick={server_tick} "
-            f"client_tick={client_tick} "
-            f"delta={server_tick - client_tick}"
-        )
-
         self.input_buffers.setdefault(player.player_id, {})[client_tick] = PendingInput(
             client_tick=client_tick,
             player_input = PlayerInput(
@@ -205,7 +199,6 @@ class Match:
             buffer = self.input_buffers.get(player.player_id, {})
 
             if buffer:
-                print(f"SIMULATION FOR PLAYER {player.player_id} | {len(buffer)=}")
                 client_tick = min(buffer.keys())
                 pending = buffer.pop(client_tick)
                 final_input = pending.player_input
@@ -225,12 +218,10 @@ class Match:
             self.move_system.act_on(player, final_input or PlayerInput())
             self.world_system.act_on(player, self.world)
 
-            logger.info(f"[SERVER] {tick=}, {player.player_id=} | Finished calculating position: {player.position!r}")
-
     async def check_victory(self, io_handler: 'server.data.all_handler.SocketIOHandler'):
         # add more conditions later
         if len(self._players) == 1:
-            # one player just left loll
+            # one player just left lol
             # mark victory somehow later
             await self._remove_player(
                 uuid=list(self._players.keys())[0],
@@ -381,12 +372,6 @@ class MatchManager:
 
                 envelope = Packets.envelope(response_data)
 
-                print(
-                    f"SEND RECONCILE "
-                    f"server_tick={tick} "
-                    f"last_client_tick={player.last_client_tick} "
-                    f"x={player.position.x}"
-                )
                 await io_handler.enqueue_single_out(envelope, player.addr)
 
     async def check_keepalive_players(

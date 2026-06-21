@@ -40,12 +40,6 @@ class CTSHandlers:
         client_tick: int = payload.client_tick
         server_tick = ctx.tick
 
-        print(
-            f"PROCESS INPUT "
-            f"client_tick={client_tick} "
-            f"server_tick={server_tick}"
-        )
-
         match.queue_input(player, client_tick, server_tick, payload)
         player.keepalive(server_tick)
 

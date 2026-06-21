@@ -14,9 +14,6 @@ class Server:
     ):
         self.ctx = ctx
         self.io_handler = io_handler
-        # debug
-        self.tps_tick_count = 0
-        self.tps_last_time = io_handler.loop.time()
 
     async def loop(self):
         asyncio.create_task(self.io_handler.enqueue_pending_in())
@@ -71,17 +68,6 @@ class Server:
 
                 accumul -= delta
                 steps += 1
-
-            # TPS logging
-            now = loop.time()
-            self.tps_tick_count += steps
-
-            elapsed = now - self.tps_last_time
-            if elapsed >= 2.0:
-                tps = self.tps_tick_count / elapsed
-                logger.info(f"TPS: {tps:.2f}")
-                self.tps_tick_count = 0
-                self.tps_last_time = now
 
             sleep = (last + delta) - loop.time()
             if sleep > 0:
