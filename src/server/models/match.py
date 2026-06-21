@@ -184,7 +184,12 @@ class Match:
         server_tick: int,
         payload: packet_pb2.PlayerMoveState
     ):
-        """Queues input for the upcoming server tick."""
+        print(
+            f"server_tick={server_tick} "
+            f"client_tick={client_tick} "
+            f"delta={server_tick - client_tick}"
+        )
+
         self.input_buffers.setdefault(player.player_id, {})[client_tick] = PendingInput(
             client_tick=client_tick,
             player_input = PlayerInput(
