@@ -205,6 +205,7 @@ class Match:
             buffer = self.input_buffers.get(player.player_id, {})
 
             if buffer:
+                print(f"SIMULATION FOR PLAYER {player.player_id} | {len(buffer)=}")
                 client_tick = min(buffer.keys())
                 pending = buffer.pop(client_tick)
                 final_input = pending.player_input
