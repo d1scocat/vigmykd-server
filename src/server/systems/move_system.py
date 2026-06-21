@@ -5,13 +5,9 @@ from server.systems import System
 
 class MoveSystem(System[Player]):
     def act_on(self, sub: Player, player_input: PlayerInput):
-        if player_input.jump:
-            sub.physics.jump_buffer_timer = phys.jump_buffer_ticks
-        elif sub.physics.jump_buffer_timer > 0:
-            sub.physics.jump_buffer_timer -= 1
-
         # === === === dashing === === === #
-        if player_input.dash and not sub.position.dashing:
+        dash_just_pressed = player_input.dash and not sub.physics.last_dash_pressed
+        if dash_just_pressed and not sub.position.dashing:
             sub.position.dashing = True
             sub.physics.dash_timer = phys.dash_duration_ticks
 
@@ -37,6 +33,8 @@ class MoveSystem(System[Player]):
             if sub.physics.dash_timer <= 0:
                 sub.position.dashing = False
 
+        sub.physics.last_dash_pressed = player_input.dash 
+
         # === === === x movement === === ===
         if sub.position.dashing:
             if not sub.position.is_grounded and player_input.duck:
@@ -54,8 +52,6 @@ class MoveSystem(System[Player]):
             if player_input.move_dir != 0:
                 target_vel = player_input.move_dir * current_move_speed
 
-                #if (player_input.move_dir > 0 and sub.position.vel_x < 0) or \
-                #    (player_input.move_dir < 0 and sub.position.vel_x > 0):
                 # decelerating?
                 if (player_input.move_dir * sub.position.vel_x) < 0:
                     self._decelerate(sub, current_decel_x)
@@ -90,14 +86,23 @@ class MoveSystem(System[Player]):
                 sub.physics.coyote_timer -= 1
 
         # === === === y movement: jump === === ===
+        jump_just_pressed = player_input.jump and not sub.physics.last_jump_pressed
+
+        if jump_just_pressed:
+            sub.physics.jump_buffer_timer = phys.jump_buffer_ticks
+        elif sub.physics.jump_buffer_timer > 0:
+            sub.physics.jump_buffer_timer -= 1
+
         can_jump = sub.position.is_grounded or sub.physics.coyote_timer > 0
         has_jump_buffer = sub.physics.jump_buffer_timer > 0
 
-        if has_jump_buffer and not player_input.duck and can_jump:
+        if (jump_just_pressed or has_jump_buffer) and not player_input.duck and can_jump:
             sub.position.vel_y = phys.jump_force
             sub.position.is_grounded = False
             sub.physics.coyote_timer = 0
             sub.physics.jump_buffer_timer = 0
+
+        sub.physics.last_jump_pressed = player_input.jump
 
         # === === === y movement: gravity === === ===
         if not sub.position.is_grounded:

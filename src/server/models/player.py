@@ -48,6 +48,8 @@ class PlayerPhysics:
     dash_timer: int = 0
     coyote_timer: int = 0
     jump_buffer_timer: int = 0
+    last_jump_pressed: bool = False
+    last_dash_pressed: bool = False
 
 
 @dataclass
@@ -63,6 +65,7 @@ class Player:
 
     last_client_tick: int = 0
     keepalive_tick: int = 2**31
+    missing_input_ticks: int = 0
 
     @property
     def rect(self) -> Rect:
