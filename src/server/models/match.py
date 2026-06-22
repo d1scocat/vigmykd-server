@@ -400,17 +400,20 @@ class MatchManager:
 
             match.simulate(tick)
 
+    async def check_won_games(self, io_handler: 'server.data.all_handler.SocketIOHandler'):
+        done = []
+        for match_id, match in self._matches.items():
             for player in match._players.values():
                 if player.health <= 0:
                     lost = Packets.lost_match()
-                    asyncio.run(io_handler.enqueue_single_out(Packets.envelope(lost), player.addr, True, lost.msg_id))
+                    await io_handler.enqueue_single_out(Packets.envelope(lost), player.addr, True, lost.msg_id)
 
                     winner = next((pl for pl in match._players.values() if pl.player_id != player.player_id), None)
                     if winner:
                         won = Packets.lost_match()
-                        asyncio.run(io_handler.enqueue_single_out(Packets.envelope(won), player.addr, True, won.msg_id))
+                        await io_handler.enqueue_single_out(Packets.envelope(won), player.addr, True, won.msg_id)
 
-                        asyncio.run(self._notify_api(winner=winner, loser=player))
+                        await self._notify_api(winner=winner, loser=player)
 
                     done.append(match_id)
 

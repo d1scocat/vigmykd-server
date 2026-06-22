@@ -52,6 +52,8 @@ class Server:
                     self.ctx.advance_simul()
                     self.io_handler.check_processed_relevance()
 
+                    asyncio.create_task(self.ctx.match_manager.check_won_games(self.io_handler))
+
                     tick_counter += 1
 
                     if tick_counter % config.reconcile_interval == 0:
