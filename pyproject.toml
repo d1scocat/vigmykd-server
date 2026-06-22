@@ -18,7 +18,8 @@ license = { file = "LICENSE" }
 dev = [
     "flake8>=6.0",
     "mypy>=1.0",
-    "pytest>=9.0.2" 
+    "pytest>=9.0.2",
+    "httpx>=0.28.1"
 ]
 
 [build-system]

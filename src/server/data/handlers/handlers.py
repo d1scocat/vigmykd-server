@@ -6,6 +6,7 @@ from server.context import ServerContext
 from server.data.factory import Packets
 from server.models.match import Match
 from server.log import logger
+from server.settings import config
 
 from google.protobuf.message import Message
 
@@ -153,6 +154,8 @@ class ICPHandlers:
         player: packet_pb2.InternalCommunicationPacket.PlayerBrief = list(payload.players)[0]
         player_id = player.id
         player_name = player.name
+        elo = player.elo
+        games_played = player.games_played
 
         join_token: str = payload.join_token  # for players[0]
         expires: int = payload.expires
@@ -172,11 +175,21 @@ class ICPHandlers:
 
             if not joined_existing:
                 for match in ctx.match_manager.find_queuing_matches():
+                    match_players = list(match.players.values())
+                    if not match_players:
+                        continue
+                    match_elo = match_players[0].elo
+
+                    if abs(match_elo - elo) > config.max_elo_diff:
+                        continue
+
                     if ctx.match_manager.add_player(
                         match.match_id,
                         player_id,
                         player_name,
                         join_token,
+                        elo,
+                        games_played,
                         None
                     ):
                         # to send a RegisterMatchResponse with the correct ID
@@ -189,7 +202,7 @@ class ICPHandlers:
                 match = Match(
                     match_id,
                     match_key,
-                    (player_id, player_name, join_token, None),
+                    (player_id, player_name, join_token, elo, games_played, None),
                     expires,
                     world,
                     name

@@ -1,16 +1,17 @@
 import asyncio
-import uuid
+import httpx
 import random
 import secrets
+import uuid
 
 from dataclasses import dataclass
 from enum import IntEnum
 from types import MappingProxyType
 
-from server.data.factory import Packets
+from server.data.factory import Packets, PacketSigner
 from server.log import logger
 from server.models.player import Facing, Position, Player, PlayerStatus, PlayerInput
-from server.settings import player as pl
+from server.settings import player as pl, config
 from server.systems.attack_system import AttackSystem
 from server.systems.move_system import MoveSystem
 from server.systems.world_system import WorldSystem
@@ -45,7 +46,7 @@ class Match:
         self,
         match_id: str,
         match_key: str,
-        founder: tuple[uuid.UUID | str, str, str, tuple[str, int] | None],
+        founder: tuple[uuid.UUID | str, str, str, int, int, tuple[str, int] | None],
         expires: int,
         world: HeadlessWorld,
         map_name: str,
@@ -61,7 +62,7 @@ class Match:
         self.world = world
         self.map_name = map_name
 
-        uid, name, join_token, client = founder
+        uid, name, join_token, elo, games_played, client = founder
         if isinstance(uid, str):
             try:
                 uid = uuid.UUID(uid)
@@ -75,7 +76,9 @@ class Match:
             join_token=join_token,
             status=PlayerStatus.WAITING_FOR_MATCHMAKING_START,
             addr=client,
-            position=Position(Facing.POS_X)
+            position=Position(Facing.POS_X),
+            elo=elo,
+            games_played=games_played
         )}
 
         self.expires = expires
@@ -102,7 +105,15 @@ class Match:
     def get_player(self, uuid: uuid.UUID) -> Player | None:
         return self._players.get(uuid)
 
-    def _add_player(self, uuid: uuid.UUID, name: str, join_token: str | None, client: tuple[str, int] | None):
+    def _add_player(
+        self,
+        uuid: uuid.UUID,
+        name: str,
+        join_token: str | None,
+        elo: int,
+        games_played: int,
+        client: tuple[str, int] | None
+    ):
         player = Player(
             player_id=uuid,
             name=name,
@@ -110,7 +121,9 @@ class Match:
             status=PlayerStatus.IN_MATCHMAKING_QUEUE,
             addr=client,
             # Assuming that _add_player is called on a non-empty queue only
-            position=Position(Facing.POS_X)
+            position=Position(Facing.POS_X),
+            elo=elo,
+            games_played=games_played
         )
         self._players[uuid] = player
 
@@ -325,6 +338,8 @@ class MatchManager:
         player_id: uuid.UUID | str,
         name: str,
         join_token: str | None,
+        elo: int,
+        games_played: int,
         client: tuple[str, int] | None
     ) -> bool:
         if isinstance(player_id, str):
@@ -340,7 +355,7 @@ class MatchManager:
         if not match._is_accepting():
             return False
 
-        match._add_player(player_id, name, join_token, client)
+        match._add_player(player_id, name, join_token, elo, games_played, client)
         return True
 
     async def quit_player(
@@ -395,11 +410,23 @@ class MatchManager:
                         won = Packets.lost_match()
                         asyncio.run(io_handler.enqueue_single_out(Packets.envelope(won), player.addr, True, won.msg_id))
 
+                        asyncio.run(_notify_api(winner=winner, loser=player))
+
                     done.append(match_id)
 
         for match_id in done:
             match = self._matches.pop(match_id, None)
             del match
+
+    async def _notify_api(self, *, winner: Player, loser: Player):
+        winner_id = str(winner.player_id)
+        loser_id = str(loser.player_id)
+        packet = Packets.envelope(PacketSigner.sign(Packets.game_over(winner_id, loser_id)))
+        result = packet.SerializeToString()
+
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.post(f"{config.server_url}/api/v1/matchmaking/end", json={"payload": result})
+            logger.info("Notified API about ending match, response: %d", resp.status_code)
 
     async def share_reconcile(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
         for _, match in self._matches.items():

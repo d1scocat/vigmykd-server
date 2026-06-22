@@ -18,6 +18,9 @@ class EnvSettings(BaseSettings):
     reconcile_interval: int = Field(...)
     max_worker_steps: int = Field(...)
 
+    max_elo_diff: int = Field(...)
+    server_url: str = Field(...)
+
     model_config = SettingsConfigDict(env_prefix="vigmykd_")
 
 

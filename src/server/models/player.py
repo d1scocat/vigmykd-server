@@ -178,6 +178,8 @@ class Combo:
 class Player:
     player_id: UUID
     name: str
+    elo: int
+    games_played: int
     join_token: str | None
     status: PlayerStatus
     addr: Tuple[str, int] | None

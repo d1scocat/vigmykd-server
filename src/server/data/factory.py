@@ -259,6 +259,24 @@ class Packets:
         return packet
 
     @staticmethod
+    def game_over(
+        winner_id: str,
+        loser_id: str,
+        msg_id: int | None = None
+    ):
+        """`envelope()` a packet before sending!"""
+        if msg_id is None:
+            msg_id = Packets.get_next_id()
+
+        packet = packet_pb2.Packet()
+        packet.msg_id = msg_id
+
+        packet.icp.game_over.won_id = winner_id
+        packet.icp.game_over.lost_id = loser_id
+
+        return packet
+
+    @staticmethod
     @overload
     def envelope(
         payload: packet_pb2.Packet,
@@ -288,9 +306,16 @@ class Packets:
 
 class PacketSigner:
     @staticmethod
-    def verify(
-        signed_packet: packet_pb2.SignedPacket,
-    ) -> bool:
+    def sign(packet: packet_pb2.Packet) -> bytes:
+        data = packet.SerializeToString()
+        return hmac.new(
+            config.signature.encode("utf-8"),
+            data,
+            hashlib.sha256
+        ).digest()
+
+    @staticmethod
+    def verify(signed_packet: packet_pb2.SignedPacket) -> bool:
         expected = hmac.new(
             config.signature.encode("utf-8"),
             signed_packet.payload.SerializeToString(),

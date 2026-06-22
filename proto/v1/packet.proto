@@ -182,6 +182,11 @@ message InternalCommunicationPacket {
         uint64 expires = 5;
     }
 
+    message GameOver {
+        string won_id = 1;
+        string lost_id = 2;
+    }
+
     message RegisterMatchResponse {
         string joined_match_id = 1;
         string old_match_id = 2;
@@ -190,6 +195,7 @@ message InternalCommunicationPacket {
     oneof payload {
         RegisterMatch register_match = 1;
         RegisterMatchResponse register_match_response = 2;
+        GameOver game_over = 3;
     }
 }
 
