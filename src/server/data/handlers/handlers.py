@@ -66,7 +66,8 @@ class CTSHandlers:
             if not player:
                 raise ActionFailed
 
-            logger.info(f"Player {player.player_id!r} claimed address {client!r}")
+            logger.info(f"Player %r claimed address %r | Match ID: %r",
+                        player.player_id, client, match.match_id)
             player.claim_address(client)
             player.keepalive(ctx.tick)
 
