@@ -9,7 +9,8 @@ requires-python = ">=3.10"
 dependencies = [
     "protobuf>=7.35.0",
     "pydantic-settings>=2.14.1",
-    "python-dotenv>=1.2.2"
+    "python-dotenv>=1.2.2",
+    "httpx>=0.28.1"
 ]
 
 license = { file = "LICENSE" }
@@ -18,8 +19,7 @@ license = { file = "LICENSE" }
 dev = [
     "flake8>=6.0",
     "mypy>=1.0",
-    "pytest>=9.0.2",
-    "httpx>=0.28.1"
+    "pytest>=9.0.2"
 ]
 
 [build-system]
