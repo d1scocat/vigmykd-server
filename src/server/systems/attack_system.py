@@ -67,7 +67,7 @@ class AttackSystem(System[Player]):
                 other.position.vel_x += nx * player.stomp_knockback_x * strength
                 other.position.vel_y += ny * player.stomp_knockback_y * strength
 
-                other.health -= player.stomp_damage
+                other.health = max(0, other.health - player.stomp_damage)
 
                 success = True
 
@@ -91,7 +91,7 @@ class AttackSystem(System[Player]):
 
                 dist = dist_sq ** 0.5
 
-                other.health -= player.punch_damage
+                other.health = max(0, other.health - player.punch_damage)
                 other.physics.invulnerable_timer = player.punch_iframes
                 other.break_combo()
 

@@ -229,6 +229,36 @@ class Packets:
         return packet
 
     @staticmethod
+    def lost_match(
+        msg_id: int | None = None
+    ):
+        """`envelope()` a packet before sending!"""
+        if msg_id is None:
+            msg_id = Packets.get_next_id()
+
+        packet = packet_pb2.Packet()
+        packet.msg_id = msg_id
+
+        packet.client_to_server.lost_match.SetInParent()
+
+        return packet
+
+    @staticmethod
+    def won_match(
+        msg_id: int | None = None
+    ):
+        """`envelope()` a packet before sending!"""
+        if msg_id is None:
+            msg_id = Packets.get_next_id()
+
+        packet = packet_pb2.Packet()
+        packet.msg_id = msg_id
+
+        packet.client_to_server.won_match.SetInParent()
+
+        return packet
+
+    @staticmethod
     @overload
     def envelope(
         payload: packet_pb2.Packet,

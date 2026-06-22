@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 import random
 import secrets
@@ -376,12 +377,29 @@ class MatchManager:
             player.status = PlayerStatus.ENTERING_GAME
             await player.inform_game_start(io_handler)
 
-    def simulate(self, tick: int):
-        for _, match in self._matches.items():
+    def simulate(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
+        done = []
+        for match_id, match in self._matches.items():
             if match.status != MatchStatus.IN_GAME:
                 continue
 
             match.simulate(tick)
+
+            for player in match._players.values():
+                if player.health <= 0:
+                    lost = Packets.lost_match()
+                    asyncio.run(io_handler.enqueue_single_out(Packets.envelope(lost), player.addr, True, lost.msg_id))
+
+                    winner = next((pl for pl in match._players.values() if pl.player_id != player.player_id), None)
+                    if winner:
+                        won = Packets.lost_match()
+                        asyncio.run(io_handler.enqueue_single_out(Packets.envelope(won), player.addr, True, won.msg_id))
+
+                    done.append(match_id)
+
+        for match_id in done:
+            match = self._matches.pop(match_id, None)
+            del match
 
     async def share_reconcile(self, tick: int, io_handler: 'server.data.all_handler.SocketIOHandler'):
         for _, match in self._matches.items():
