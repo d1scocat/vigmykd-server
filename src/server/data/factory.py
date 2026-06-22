@@ -239,7 +239,7 @@ class Packets:
         packet = packet_pb2.Packet()
         packet.msg_id = msg_id
 
-        packet.client_to_server.lost_match.SetInParent()
+        packet.server_to_client.lost_match.SetInParent()
 
         return packet
 
@@ -254,7 +254,7 @@ class Packets:
         packet = packet_pb2.Packet()
         packet.msg_id = msg_id
 
-        packet.client_to_server.won_match.SetInParent()
+        packet.server_to_client.won_match.SetInParent()
 
         return packet
 

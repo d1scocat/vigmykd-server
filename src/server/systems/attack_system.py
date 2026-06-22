@@ -101,7 +101,7 @@ class AttackSystem(System[Player]):
                 if sub.combo.hits >= player.punches_to_knockdown:
                     other.physics.stun_timer = player.punch_stun_ticks
                     other.position.vel_x += (dx / max(dist, 0.0001)) * player.punch_knockdown_kb_x
-                    other.position.vel_y = -player.punch_knockdown_kb_y
+                    other.position.vel_y += player.punch_knockdown_kb_y
                     other.position.is_grounded = False
 
                 recoil_dir = -1 if dx > 0 else 1
