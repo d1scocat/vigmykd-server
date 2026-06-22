@@ -10,6 +10,7 @@ from server.data.factory import Packets
 from server.log import logger
 from server.models.player import Facing, Position, Player, PlayerStatus, PlayerInput
 from server.settings import player as pl
+from server.systems.attack_system import AttackSystem
 from server.systems.move_system import MoveSystem
 from server.systems.world_system import WorldSystem
 from server.world import loader
@@ -82,6 +83,7 @@ class Match:
 
         self.move_system = MoveSystem()
         self.world_system = WorldSystem()
+        self.attack_system = AttackSystem()
 
         self.input_buffers: dict[uuid.UUID, dict[int, PendingInput]] = {}
 
@@ -191,7 +193,18 @@ class Match:
                 move_dir=payload.move_dir,
                 duck=payload.duck,
                 jump=payload.jump,
-                dash=payload.dash
+                dash=payload.dash,
+                brake_dash=payload.brake_dash,
+                reverse_dash=payload.reverse_dash,
+                hang=payload.hang,
+                parry=payload.parry,
+                gravity_heavy=payload.gravity_heavy,
+                gravity_light=payload.gravity_light,
+                gravity_normal=payload.gravity_normal,
+
+                punch=payload.punch,
+                push=payload.push,
+                stomp=payload.stomp,
             )
         )
 
@@ -216,8 +229,15 @@ class Match:
                 else:
                     final_input = PlayerInput()
 
-            self.move_system.act_on(player, final_input or PlayerInput())
+            other_players = [
+                other
+                for other in self.players.values()
+                if other.player_id != player.player_id
+            ]
+
+            self.move_system.act_on(player, final_input)
             self.world_system.act_on(player, self.world)
+            self.attack_system.act_on(player, final_input, other_players)
 
     async def check_victory(self, io_handler: 'server.data.all_handler.SocketIOHandler'):
         # add more conditions later

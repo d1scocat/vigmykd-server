@@ -166,16 +166,39 @@ class Packets:
             rec_data.y = player.position.y
             rec_data.vel_x = player.position.vel_x
             rec_data.vel_y = player.position.vel_y
+
             rec_data.is_grounded = player.position.is_grounded
             rec_data.is_ducking = player.position.ducking
             rec_data.is_dashing = player.position.dashing
+
             rec_data.dash_timer = player.physics.dash_timer
             rec_data.coyote_timer = player.physics.coyote_timer
             rec_data.jump_buffer_timer = player.physics.jump_buffer_timer
             rec_data.last_jump_pressed = player.physics.last_jump_pressed
             rec_data.last_dash_pressed = player.physics.last_dash_pressed
+            rec_data.hang_timer = player.physics.hang_timer
+            rec_data.invulnerable_timer = player.physics.invulnerable_timer
+            rec_data.heavy_gravity_timer = player.physics.heavy_gravity_timer
+            rec_data.light_gravity_timer = player.physics.light_gravity_timer
+            rec_data.stun_timer = player.physics.stun_timer
+
+            rec_data.brake_dash = player.cooldowns.brake_dash
+            rec_data.reverse_dash = player.cooldowns.reverse_dash
+            rec_data.hang = player.cooldowns.hang
+            rec_data.parry = player.cooldowns.parry
+            rec_data.heavy = player.cooldowns.heavy
+            rec_data.light = player.cooldowns.light
+            rec_data.normal = player.cooldowns.normal
+            rec_data.push = player.cooldowns.push
+            rec_data.stomp = player.cooldowns.stomp
+            rec_data.punch = player.cooldowns.punch
+
+            rec_data.combo_hits = player.combo.hits
+            rec_data.combo_timer = player.combo.timer
+            rec_data.combo_broken = player.combo.broken
 
             rec_data.mana = player.mana
+            rec_data.health = player.health
 
             packet_players.append(rec_data)
 
