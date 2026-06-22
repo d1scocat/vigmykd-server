@@ -410,7 +410,7 @@ class MatchManager:
                         won = Packets.lost_match()
                         asyncio.run(io_handler.enqueue_single_out(Packets.envelope(won), player.addr, True, won.msg_id))
 
-                        asyncio.run(_notify_api(winner=winner, loser=player))
+                        asyncio.run(self._notify_api(winner=winner, loser=player))
 
                     done.append(match_id)
 

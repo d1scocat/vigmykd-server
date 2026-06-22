@@ -46,30 +46,33 @@ class Server:
             steps = 0
 
             while accumul >= delta and steps < config.max_worker_steps:
-                self.ctx.match_manager.ensure_mana()
-                self.ctx.match_manager.simulate(self.ctx.tick)
-                self.ctx.advance_simul()
-                self.io_handler.check_processed_relevance()
+                try:
+                    self.ctx.match_manager.ensure_mana()
+                    self.ctx.match_manager.simulate(self.ctx.tick, self.io_handler)
+                    self.ctx.advance_simul()
+                    self.io_handler.check_processed_relevance()
 
-                tick_counter += 1
+                    tick_counter += 1
 
-                if tick_counter % config.reconcile_interval == 0:
-                    asyncio.create_task(
-                        self.ctx.match_manager.share_reconcile(
-                            self.ctx.tick,
-                            self.io_handler
+                    if tick_counter % config.reconcile_interval == 0:
+                        asyncio.create_task(
+                            self.ctx.match_manager.share_reconcile(
+                                self.ctx.tick,
+                                self.io_handler
+                            )
                         )
-                    )
 
-                    asyncio.create_task(
-                        self.ctx.match_manager.check_keepalive_players(
-                            self.ctx.tick,
-                            self.io_handler
+                        asyncio.create_task(
+                            self.ctx.match_manager.check_keepalive_players(
+                                self.ctx.tick,
+                                self.io_handler
+                            )
                         )
-                    )
 
-                accumul -= delta
-                steps += 1
+                    accumul -= delta
+                    steps += 1
+                except Exception:
+                    logger.exception("TPS worker failed")
 
             sleep = (last + delta) - loop.time()
             if sleep > 0:
