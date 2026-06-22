@@ -416,6 +416,7 @@ class MatchManager:
                         await self._notify_api(winner=winner, loser=player)
 
                     done.append(match_id)
+                    break
 
         for match_id in done:
             match = self._matches.pop(match_id, None)
