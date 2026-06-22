@@ -172,6 +172,8 @@ message InternalCommunicationPacket {
     message PlayerBrief {
         string id = 1;
         string name = 2;
+        int32 elo = 3;
+        int32 games_played = 4;
     }
 
     message RegisterMatch {
