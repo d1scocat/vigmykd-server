@@ -411,7 +411,7 @@ class MatchManager:
                     winner = next((pl for pl in match._players.values() if pl.player_id != player.player_id), None)
                     if winner:
                         won = Packets.lost_match()
-                        await io_handler.enqueue_single_out(Packets.envelope(won), player.addr, True, won.msg_id)
+                        await io_handler.enqueue_single_out(Packets.envelope(won), winner.addr, True, won.msg_id)
 
                         await self._notify_api(winner=winner, loser=player)
 
