@@ -15,7 +15,6 @@ class AttackSystem(System[Player]):
 
         # === === === push (no damage, kb) === === ===
         if player_input.push and sub.cooldowns.can_push:
-            print("[DEBUG] push 1")
             success = False
 
             for other in others:
@@ -25,10 +24,8 @@ class AttackSystem(System[Player]):
                 dx = other.position.x - sub.position.x
                 dy = abs(other.position.y - sub.position.y)
 
-                if abs(dx) > player.push_range or dy <= player.push_vertical_tolerance:
+                if abs(dx) > player.push_range or dy > player.push_vertical_tolerance:
                     continue
-
-                print(f"[DEBUG] Push suitable player is {other.player_id!r}")
 
                 direction = 1 if dx >= 0 else -1
                 other.position.vel_x += direction * player.push_force_x
@@ -44,7 +41,6 @@ class AttackSystem(System[Player]):
 
         # === === === stomp (small aoe damage, kb)
         if player_input.stomp and sub.position.is_grounded and sub.cooldowns.can_stomp:
-            print("[DEBUG] stomp 1")
             success = False
 
             for other in others:
@@ -57,8 +53,6 @@ class AttackSystem(System[Player]):
 
                 if dist_sq > (player.stomp_range ** 2):
                     continue
-
-                print(f"[DEBUG] Stomp suitable player is {other.player_id!r}")
 
                 dist = dist_sq ** 0.5
                 nx = dx / dist
@@ -82,7 +76,6 @@ class AttackSystem(System[Player]):
 
         # === === === punch (damage, 4 hits in a row lead to kb + stun) === === ===
         if player_input.punch and sub.cooldowns.can_punch:
-            print("[DEBUG] punch 1")
             success = False
 
             for other in others:
@@ -95,8 +88,6 @@ class AttackSystem(System[Player]):
 
                 if dist_sq > (player.punch_range ** 2):
                     continue
-
-                print(f"[DEBUG] Punch suitable player is {other.player_id!r}")
 
                 dist = dist_sq ** 0.5
 

@@ -199,7 +199,6 @@ class Packets:
 
             rec_data.mana = player.mana
             rec_data.health = player.health
-            print(f"[DEBUG] added {rec_data.uuid} to reconcile with {rec_data.mana=}, {rec_data.health=}")
 
             packet_players.append(rec_data)
 
